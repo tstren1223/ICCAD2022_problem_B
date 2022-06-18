@@ -1,0 +1,8 @@
+make gp=1 mode=release
+
+./placer -bookshelf iccad2022 -aux ../case/case1.txt -pl 1 -flow iccad2022 -cpu 1 -gp_num_gr_iter 0 -output output.txt
+./placer ../case/case1.txt output.txt
+./placer ../case/case1.txt output.txt -load_place
+
+
+./evaluator ../case/case1.txt output.txt
