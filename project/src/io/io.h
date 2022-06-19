@@ -34,6 +34,8 @@ public:
     
     //ICCAD2022
     static bool load_place;
+    static bool TOP;
+    static bool ANS;
 public:
     const std::string& name() const { return _name; }
     static bool load();

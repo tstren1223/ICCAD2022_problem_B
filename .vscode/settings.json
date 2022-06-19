@@ -27,5 +27,11 @@
     "**/.*/**",
     "**/.vscode",
     "**/.vscode/**"
-  ]
+  ],
+  "files.associations": {
+    "*.inc": "asp",
+    "ostream": "cpp",
+    "iostream": "cpp",
+    "iosfwd": "cpp"
+  }
 }

@@ -39,6 +39,7 @@ int Ripple::_run(int argc, char **argv)
     else
     {
         rippleSetting.flow = RippleSetting::PlaceFlow::ICCAD2022;
+
         gp::GPModule::MainGRIterations = 0;
         Shell::addModule(new io::IOModule);
         Shell::addModule(new db::DBModule);
@@ -129,25 +130,28 @@ int Ripple::_run(int argc, char **argv)
                 Shell::proc("save");
             }
             // bottom
-            Shell::proc("load");
-            if (io::IOModule::load_place == false)
+            if (!io::IOModule::TOP&&!io::IOModule::ANS)
             {
-                database.setup();
-                database.errorCheck();
-                printlog(LOG_INFO,
-                         "wirelength = %.2lf (scale=%.2lf)",
-                         (double)database.getHPWL() / (double)database.siteW,
-                         (double)database.siteW);
-                Shell::proc("gplace");
-                printlog(LOG_INFO,
-                         "wirelength = %.2lf (scale=%.2lf)",
-                         (double)database.getHPWL() / (double)database.siteW,
-                         (double)database.siteW);
-                dp::DPModule::MaxDisp = database.maxDisp * database.siteH / database.siteW;
-                dp::DPModule::MaxDensity = database.maxDensity;
-                Shell::proc("dplace");
+                Shell::proc("load");
+                if (io::IOModule::load_place == false)
+                {
+                    database.setup();
+                    database.errorCheck();
+                    printlog(LOG_INFO,
+                             "wirelength = %.2lf (scale=%.2lf)",
+                             (double)database.getHPWL() / (double)database.siteW,
+                             (double)database.siteW);
+                    Shell::proc("gplace");
+                    printlog(LOG_INFO,
+                             "wirelength = %.2lf (scale=%.2lf)",
+                             (double)database.getHPWL() / (double)database.siteW,
+                             (double)database.siteW);
+                    dp::DPModule::MaxDisp = database.maxDisp * database.siteH / database.siteW;
+                    dp::DPModule::MaxDensity = database.maxDensity;
+                    Shell::proc("dplace");
+                }
+                Shell::proc("save");
             }
-            Shell::proc("save");
             break;
         default:
             break;
@@ -344,8 +348,17 @@ int Ripple::getArgs(int argc, char **argv)
                 return 1;
             }
         }
-        else if (strcmp(argv[a], "-load_place") == 0){
-            io::IOModule::load_place=true;
+        else if (strcmp(argv[a], "-load_place") == 0)
+        {
+            io::IOModule::load_place = true;
+        }
+        else if (strcmp(argv[a], "-top") == 0)
+        {
+            io::IOModule::TOP = true;
+        }
+        else if (strcmp(argv[a], "-ans") == 0)
+        {
+            io::IOModule::ANS = true;
         }
         else if (argv[a][0] == '-')
         {

@@ -73,6 +73,30 @@ bool GPModule::gplace(ripple::ShellOptions& args, ripple::ShellCmdReturn& ret) {
     gp_copy_in(true);
     gp_main();
     gp_copy_out();
+    nameMap.clear();
+    cellName.clear();
+    netCell.clear();
+    netPinX.clear();
+    netPinY.clear();
+    netWeight.clear();
+    netNDR.clear();
+    cellNet.clear();
+    cellPin.clear();
+    cellX.clear();
+    cellY.clear();
+    cellW.clear();
+    cellAW.clear();
+    cellH.clear();
+    cellAW.clear();
+    cellFenceX.clear();
+    cellFenceY.clear();
+    cellFenceDist.clear();
+    cellFenceRect.clear();
+    cellFence.clear();
+    fenceRectLX.clear();
+    fenceRectLY.clear();
+    fenceRectHX.clear();
+    fenceRectHY.clear();
     return true;
 }
 

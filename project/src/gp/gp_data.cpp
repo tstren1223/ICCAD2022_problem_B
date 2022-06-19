@@ -75,12 +75,10 @@ void gp_copy_in(bool layout)
 }
 
 vector<db::Cell *> cellDBMap;
-
+map<db::Cell *, int> dbCellMap;
 void gp_copy_layout_in()
 {
     double scale = 1.0 / (double)database.siteW;
-
-    map<db::Cell *, int> dbCellMap;
     map<db::Region *, int> dbRegionMap;
     map<db::IOPin *, int> dbIOPinMap;
     numNodes = 0;
@@ -110,7 +108,6 @@ void gp_copy_layout_in()
 
     numNets = database.nets.size();
     numFences = database.regions.size();
-
     for (int i = 0; i < (int)database.cells.size(); i++)
     {
         if (database.cells[i]->fixed())
@@ -127,9 +124,8 @@ void gp_copy_layout_in()
     {
         numPins += database.nets[i]->pins.size();
     }
-
+    dbCellMap.clear();
     cellDBMap.resize(numCells, NULL);
-
     fenceRectLX.resize(numFences);
     fenceRectLY.resize(numFences);
     fenceRectHX.resize(numFences);
@@ -151,7 +147,6 @@ void gp_copy_layout_in()
             fenceRectHY[i][r] = (region->rects[r].hy - database.coreLY) * scale;
         }
     }
-
     cellX.resize(numNodes, 0);
     cellY.resize(numNodes, 0);
     cellW.resize(numNodes, 0);
@@ -164,28 +159,20 @@ void gp_copy_layout_in()
     cellFenceDist.resize(numCells, 0);
     cellFenceRect.resize(numCells, 0);
     cellFence.resize(numCells, -1);
-
     netCell.resize(numNets);
-    for(auto i:netCell)
-        i.clear();
     netPinX.resize(numNets);
-    for(auto i:netPinX)
-        i.clear();
     netPinY.resize(numNets);
-    for(auto i:netPinY)
-        i.clear();
     netWeight.resize(numNets, 1.0);
     netNDR.resize(numNets, -1);
-
     cellNet.resize(numNodes);
     cellPin.resize(numNodes);
-
     int c_i = 0;
     int m_i = numCells;
     int p_i = numCells + numMacros;
     for (int i = 0; i < (int)database.cells.size(); i++)
     {
         db::Cell *cell = database.cells[i];
+        
         if (cell->fixed())
         {
             dbCellMap[cell] = m_i;
@@ -258,7 +245,6 @@ void gp_copy_layout_in()
             }
         }
     }
-
     numRGridX = database.grGrid.gcellNX;
     numRGridY = database.grGrid.gcellNY;
     RGridW = database.grGrid.gcellStepX * scale;
@@ -280,7 +266,6 @@ void gp_copy_layout_in()
         if (cellY[i] > RGridHY)
             cellY[i] = RGridHY;
     }
-
     //  GPModule::TargetDensityBegin = max(GPModule::TargetDensityBegin, database.tdBins.getTDBin());
     GPModule::TargetDensityEnd = database.tdBins.getTDBin();
     GPModule::TargetDensityBegin = GPModule::TargetDensityEnd;
@@ -322,12 +307,16 @@ double hpwl()
         }
         double lx, ly, hx, hy;
         int cell = netCell[i][0];
+        
         lx = hx = cellX[cell] + netPinX[i][0];
+        
         ly = hy = cellY[cell] + netPinY[i][0];
         for (int p = 1; p < nPins; p++)
         {
             cell = netCell[i][p];
+            
             double px = cellX[cell] + netPinX[i][p];
+            
             double py = cellY[cell] + netPinY[i][p];
             lx = min(lx, px);
             ly = min(ly, py);

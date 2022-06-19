@@ -617,7 +617,7 @@ public:
         }
         int pin_x, pin_y;
         int row, col, centerX, centerY;
-        int i=net_idx;
+        int i = net_idx;
         for (int j = 0; j < net_pin_num[i]; j++)
         {
             pair<int, int> pin_xy = pin_result(i, j);
@@ -806,51 +806,103 @@ public:
         out_file.close();
         return true;
     }
-    bool write_Place_result()
+    bool write_Place_result(bool TOP, string file = "")
     {
-        ofstream out_file("placement_r");
-        ofstream out2_file("net.hgr.part.2");
-        if (!out_file.good())
+        if (TOP == false)
         {
-            printlog(LOG_ERROR, "cannot open file: placement_r");
-            return false;
+            ofstream out_file("placement_r");
+            ofstream out2_file("net.hgr.part.2");
+            if (!out_file.good())
+            {
+                printlog(LOG_ERROR, "cannot open file: placement_r");
+                return false;
+            }
+            if (!out2_file.good())
+            {
+                printlog(LOG_ERROR, "cannot open file: placement_r");
+                return false;
+            }
+            for (int i = 0; i < cell_inst_num; i++)
+            {
+                out2_file << (cell_inst_die[i] == &top ? 0 : 1) << endl;
+            }
+            out2_file.close();
+            for (int i = 0; i < cell_inst_num; i++)
+            {
+                out_file << cell_xy[cName[i]].first << " " << cell_xy[cName[i]].second << endl;
+            }
+            out_file.close();
         }
-        if (!out2_file.good())
+        else
         {
-            printlog(LOG_ERROR, "cannot open file: placement_r");
-            return false;
+            ofstream out_file(file);
+            ofstream out2_file("net.hgr.part.2");
+            if (!out_file.good())
+            {
+                printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
+                return false;
+            }
+            if (!out2_file.good())
+            {
+                printlog(LOG_ERROR, "cannot open file: net.hgr.part.2");
+                return false;
+            }
+            for (int i = 0; i < cell_inst_num; i++)
+            {
+                out2_file << (cell_inst_die[i] == &top ? 0 : 1) << endl;
+            }
+            out2_file.close();
+            out_file << top.cell_num << endl;
+            for (int i = 0; i < cell_inst_num; i++)
+            {
+                if (cell_inst_die[i] == &top)
+                    out_file << i << " " << cell_xy[cName[i]].first << " " << cell_xy[cName[i]].second << endl;
+            }
+            out_file.close();
         }
-        for (int i = 0; i < cell_inst_num; i++)
-        {
-            out2_file << (cell_inst_die[i] == &top ? 0 : 1) << endl;
-        }
-        out2_file.close();
-        for (int i = 0; i < cell_inst_num; i++)
-        {
-            out_file << cell_xy[cName[i]].first << " " << cell_xy[cName[i]].second << endl;
-        }
-        out_file.close();
         return true;
     }
-    bool load_Place_result()
+    bool load_Place_result(bool ANS, string file = "")
     {
         f.read_net();
         f.area_adjust();
         f.ans();
-        ifstream in_file("placement_r");
-        if (!in_file.good())
+        if (ANS == false)
         {
-            printlog(LOG_ERROR, "cannot open file: placement_r");
-            return false;
+            ifstream in_file("placement_r");
+            if (!in_file.good())
+            {
+                printlog(LOG_ERROR, "cannot open file: placement_r");
+                return false;
+            }
+            for (int i = 0; i < cell_inst_num; i++)
+            {
+                int x, y;
+                in_file >> x >> y;
+                cell_xy[cName[i]] = make_pair(x, y);
+            }
+            in_file.close();
+            printlog(LOG_INFO, "Reload placement success!");
         }
-        for (int i = 0; i < cell_inst_num; i++)
+        else
         {
-            int x, y;
-            in_file >> x >> y;
-            cell_xy[cName[i]] = make_pair(x, y);
+            ifstream in_file(file);
+            if (!in_file.good())
+            {
+                printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
+                return false;
+            }
+            int top_num;
+            in_file >> top_num;
+            for (int i = 0; i < top_num; i++)
+            {
+                int index, x, y;
+                in_file >> index >> x >> y;
+                cell_xy[cName[index]] = make_pair(x, y);
+            }
+            in_file.close();
+            printlog(LOG_INFO, "Reload top die result success!");
         }
-        in_file.close();
-        printlog(LOG_INFO, "Reload placement success!");
         return true;
     }
 };
@@ -1999,22 +2051,28 @@ bool Database::writeBSPl(const std::string &file)
 
 // ICCAD2022 read
 
-bool Database::readICCAD2022_setup(const std::string &FILE, int times, bool place_load)
+bool Database::readICCAD2022_setup(const std::string &FILE, int times, bool place_load, bool TOP, bool ANS)
 {
     if (!times)
     {
         printlog(LOG_INFO, "reading iccad2022.");
-        readICCAD2022(FILE, place_load); // this auxfile should be input txt
+        readICCAD2022(FILE, place_load, TOP, ANS); // this auxfile should be input txt
         // process top die first
         if (place_load)
             return true;
-        bsData.load_Die(top);
+        if (TOP || !ANS)
+            bsData.load_Die(top);
+        else
+            bsData.load_Die(bottom);
     }
     else if (times == 1)
     {
         if (place_load)
             return true;
-        bsData.load_Die(bottom);
+        if (TOP || !ANS)
+            bsData.load_Die(bottom);
+        else
+            bsData.load_Die(top);
     }
     bsData.estimateSiteSize();
     if (bsData.siteWidth < 10)
@@ -2181,7 +2239,7 @@ bool Database::readICCAD2022_setup(const std::string &FILE, int times, bool plac
     bsData.clearData();
     return true;
 }
-bool Database::readICCAD2022(const std::string &in_filename, bool place_load)
+bool Database::readICCAD2022(const std::string &in_filename, bool place_load, bool TOP, bool ANS)
 {
     ifstream fs(in_filename.c_str());
     if (!fs.good())
@@ -2409,13 +2467,13 @@ bool Database::readICCAD2022(const std::string &in_filename, bool place_load)
     tech_B.setup_areas();
     global_inst.setup_cell_net_map();
     // hmetis
-    if (place_load == false)
+    if (place_load == false && ANS == false)
     {
         global_inst.f.partition();
     }
     else
     {
-        global_inst.load_Place_result();
+        global_inst.load_Place_result(ANS, "top.txt");
     }
     global_inst.f.output_to_global(global_inst);
     printlog(LOG_INFO, "Partition over.");
@@ -2507,33 +2565,93 @@ bool Database::readICCAD2022(const std::string &in_filename, bool place_load)
 }
 // ICCAD2022 write
 
-bool Database::writeICCAD2022(const std::string &file, int load_num, bool place_load)
+bool Database::writeICCAD2022(const std::string &file, int load_num, bool place_load, bool TOP, bool ANS)
 {
     // load_num==1-->top die complete
     // load_num==2-->bottom die complete
-    if (load_num == 1 && place_load == false)
+    if (TOP == false && ANS == false)
     {
-        checkPlaceError();
-        printlog(LOG_INFO, "--------------Load the result of top die--------------");
-        for (auto cell : database.cells)
-        {
-            if (global_inst.cell_xy.find(cell->name()) != global_inst.cell_xy.end())
-            {
-                cerr << "Repeat load placement result of " << cell->name() << endl;
-                return false;
-            }
-            else
-            {
-                global_inst.cell_xy[cell->name()] = make_pair(cell->lx() / _scale, cell->ly() / _scale);
-            }
-        }
-    }
-    else if (load_num == 2 || place_load == true)
-    {
-        if (place_load == false)
+        if (load_num == 1 && place_load == false)
         {
             checkPlaceError();
-            printlog(LOG_INFO, "--------------Load the result of bottom die--------------");
+            printlog(LOG_INFO, "--------------Load the result of top die--------------");
+            for (auto cell : database.cells)
+            {
+                if (global_inst.cell_xy.find(cell->name()) != global_inst.cell_xy.end())
+                {
+                    cerr << "Repeat load placement result of " << cell->name() << endl;
+                    return false;
+                }
+                else
+                {
+                    global_inst.cell_xy[cell->name()] = make_pair(cell->lx() / _scale, cell->ly() / _scale);
+                }
+            }
+        }
+        else if (load_num == 2 || place_load == true)
+        {
+            if (place_load == false)
+            {
+                checkPlaceError();
+                printlog(LOG_INFO, "--------------Load the result of bottom die--------------");
+                for (auto cell : database.cells)
+                {
+                    if (global_inst.cell_xy.find(cell->name()) != global_inst.cell_xy.end())
+                    {
+                        cerr << "Repeat load placement result of " << cell->name() << endl;
+                    }
+                    else
+                    {
+                        global_inst.cell_xy[cell->name()] = make_pair(cell->lx() / _scale, cell->ly() / _scale);
+                    }
+                }
+            }
+            printlog(LOG_INFO, "Loading is over");
+            if (place_load == false)
+                global_inst.write_Place_result(TOP);
+            // terminal
+            if (!global_inst.terminal_insert())
+            {
+                printlog(LOG_ERROR, "Terminal Inersion fails");
+            }
+            printlog(LOG_INFO, "Terminal Insersion is over");
+            // Analyze for HPWL
+            printlog(LOG_INFO, "Total HPWL for 2 dies: %lld", global_inst.getCost());
+            // output
+            global_inst.layout_info();
+            if (!global_inst.writeICCAD2022(file))
+            {
+                printlog(LOG_ERROR, "Output to ICCAD format fails");
+            }
+            else
+                printlog(LOG_INFO, "Output to %s", file.c_str());
+        }
+    }
+    else
+    {
+        if (TOP)
+        {
+
+            checkPlaceError();
+            printlog(LOG_INFO, "--------------Load the result of top die--------------");
+            for (auto cell : database.cells)
+            {
+                if (global_inst.cell_xy.find(cell->name()) != global_inst.cell_xy.end())
+                {
+                    cerr << "Repeat load placement result of " << cell->name() << endl;
+                    return false;
+                }
+                else
+                {
+                    global_inst.cell_xy[cell->name()] = make_pair(cell->lx() / _scale, cell->ly() / _scale);
+                }
+            }
+            global_inst.write_Place_result(TOP, "top.txt");
+        }
+        if (ANS)
+        {
+            checkPlaceError();
+            printlog(LOG_INFO, "--------------Load the result of top die--------------");
             for (auto cell : database.cells)
             {
                 if (global_inst.cell_xy.find(cell->name()) != global_inst.cell_xy.end())
@@ -2545,26 +2663,24 @@ bool Database::writeICCAD2022(const std::string &file, int load_num, bool place_
                     global_inst.cell_xy[cell->name()] = make_pair(cell->lx() / _scale, cell->ly() / _scale);
                 }
             }
+            if (place_load == false)
+                global_inst.write_Place_result(TOP);
+            if (!global_inst.terminal_insert())
+            {
+                printlog(LOG_ERROR, "Terminal Inersion fails");
+            }
+            printlog(LOG_INFO, "Terminal Insersion is over");
+            // Analyze for HPWL
+            printlog(LOG_INFO, "Total HPWL for 2 dies: %lld", global_inst.getCost());
+            // output
+            global_inst.layout_info();
+            if (!global_inst.writeICCAD2022(file))
+            {
+                printlog(LOG_ERROR, "Output to ICCAD format fails");
+            }
+            else
+                printlog(LOG_INFO, "Output to %s", file.c_str());
         }
-        printlog(LOG_INFO, "Loading is over");
-        if (place_load == false)
-            global_inst.write_Place_result();
-        // terminal
-        if (!global_inst.terminal_insert())
-        {
-            printlog(LOG_ERROR, "Terminal Inersion fails");
-        }
-        printlog(LOG_INFO, "Terminal Insersion is over");
-        // Analyze for HPWL
-        printlog(LOG_INFO, "Total HPWL for 2 dies: %lld", global_inst.getCost());
-        // output
-        global_inst.layout_info();
-        if (!global_inst.writeICCAD2022(file))
-        {
-            printlog(LOG_ERROR, "Output to ICCAD format fails");
-        }
-        else
-            printlog(LOG_INFO, "Output to %s", file.c_str());
     }
     return true;
 }

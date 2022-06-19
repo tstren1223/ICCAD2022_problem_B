@@ -253,9 +253,9 @@ public:
     bool readBSWts(const std::string& file);
     bool readBSPl(const std::string& file);
     bool writeBSPl(const std::string& file);
-    bool readICCAD2022(const std::string& in_filename, bool place_load);
-    bool readICCAD2022_setup(const std::string &FILE,int times,bool place_load);
-    bool writeICCAD2022(const std::string&file,int load_num,bool place_load);
+    bool readICCAD2022(const std::string& in_filename, bool place_load,bool TOP,bool ANS);
+    bool readICCAD2022_setup(const std::string &FILE,int times,bool place_load,bool TOP,bool ANS);
+    bool writeICCAD2022(const std::string&file,int load_num,bool place_load,bool TOP,bool ANS);
     bool readVerilog(const std::string& file);
     bool readLiberty(const std::string& file);
 

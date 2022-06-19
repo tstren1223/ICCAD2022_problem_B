@@ -15,6 +15,8 @@ std::string IOModule::BookshelfVariety = "ICCAD2022";
 std::string IOModule::BookshelfPlacement = "";
 // ICCAD2022
 bool IOModule::load_place=false;
+bool IOModule::TOP=false;
+bool IOModule::ANS=false;
 
 std::string IOModule::LefTech = "";
 std::string IOModule::LefCell = "";
@@ -83,7 +85,7 @@ bool io::IOModule::load()
             database.readBSAux(BookshelfAux, BookshelfPl);
         else
         {
-            database.readICCAD2022_setup(BookshelfAux, load_num,load_place);
+            database.readICCAD2022_setup(BookshelfAux, load_num,load_place,TOP,ANS);
         }
         load_num++;
     }
@@ -178,7 +180,7 @@ bool io::IOModule::save()
             database.writeBSPl(BookshelfPlacement);
         else
         {
-            database.writeICCAD2022(BookshelfPlacement,load_num,load_place);
+            database.writeICCAD2022(BookshelfPlacement,load_num,load_place,TOP,ANS);
         }
     }
     else if (Format == "lefdef" && DefPlacement.size())
