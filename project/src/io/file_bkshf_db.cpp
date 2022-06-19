@@ -2651,7 +2651,7 @@ bool Database::writeICCAD2022(const std::string &file, int load_num, bool place_
         if (ANS)
         {
             checkPlaceError();
-            printlog(LOG_INFO, "--------------Load the result of top die--------------");
+            printlog(LOG_INFO, "--------------Load the result of bottom die--------------");
             for (auto cell : database.cells)
             {
                 if (global_inst.cell_xy.find(cell->name()) != global_inst.cell_xy.end())
@@ -2664,7 +2664,7 @@ bool Database::writeICCAD2022(const std::string &file, int load_num, bool place_
                 }
             }
             if (place_load == false)
-                global_inst.write_Place_result(TOP);
+                //global_inst.write_Place_result(TOP);
             if (!global_inst.terminal_insert())
             {
                 printlog(LOG_ERROR, "Terminal Inersion fails");
