@@ -2,7 +2,6 @@
 #define _DB_DB_H_
 
 #include "../global.h"
-#include "../tcl/tcl.h"
 #include "../vi/vi.h"
 using namespace vi;
 
@@ -234,36 +233,10 @@ public:
 
     /* defined in io/file_lefdef_db.cpp */
 public:
-    bool readLEF(const std::string& file);
-    bool readDEF(const std::string& file);
-    bool readDEFPG(const string& file);
-    bool writeDEF(const std::string& file);
-    bool writeICCAD2017(const string& inputDef, const string& outputDef);
-    bool writeICCAD2017(const string& outputDef);
-    bool writeComponents(ofstream& ofs);
-    bool writeBuffer(ofstream& ofs, const string& line);
-    void writeBufferFlush(ofstream& ofs);
 
-    bool readBSAux(const std::string& auxFile, const std::string& plFile);
-    bool readBSNodes(const std::string& file);
-    bool readBSNets(const std::string& file);
-    bool readBSScl(const std::string& file);
-    bool readBSRoute(const std::string& file);
-    bool readBSShapes(const std::string& file);
-    bool readBSWts(const std::string& file);
-    bool readBSPl(const std::string& file);
-    bool writeBSPl(const std::string& file);
-    bool readICCAD2022(const std::string& in_filename, bool place_load,bool TOP,bool ANS);
-    bool readICCAD2022_setup(const std::string &FILE,int times,bool place_load,bool TOP,bool ANS);
-    bool writeICCAD2022(const std::string&file,int load_num,bool place_load,bool TOP,bool ANS);
-    bool readVerilog(const std::string& file);
-    bool readLiberty(const std::string& file);
-
-    bool readConstraints(const std::string& file);
-    bool readSize(const std::string& file);
-
-    bool readRipple(const std::string& file);
-    bool writeRipple(const std::string& file);
+    bool readICCAD2022(const std::string& in_filename);
+    bool readICCAD2022_setup(const std::string &FILE);
+    bool writeICCAD2022(const std::string&file);
 
 private:
     void SetupLayers();
@@ -291,7 +264,7 @@ public:
     void draw(Visualizer* v) const;
 };
 
-class DBModule : public ripple::ShellModule {
+class DBModule{
 private:
     static std::string _name;
 
@@ -301,10 +274,6 @@ public:
     static bool EnablePG;
     static bool EnableIOPin;
     static std::string LogFolderName;
-
-    void registerCommands() { /*ripple::Shell::addCommand(this, "xxx", DBModule::xxx);*/
-    }
-    void registerOptions();
     void showOptions() const;
 
 public:

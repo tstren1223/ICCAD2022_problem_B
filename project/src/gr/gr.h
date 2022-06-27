@@ -2,7 +2,7 @@
 #define _GR_H_
 
 #include "../global.h"
-#include "../tcl/tcl.h"
+
 #include "gr_setting.h"
 
 typedef struct GRResult GRResult;
@@ -24,7 +24,7 @@ inline int groute(GRResult& result) { return groute(result, false, true); }
 
 namespace gr {
 
-class GRModule : public ripple::ShellModule {
+class GRModule{
 public:
     static int GCellTracksX;
     static int GCellTracksY;

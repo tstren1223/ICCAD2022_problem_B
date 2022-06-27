@@ -126,7 +126,7 @@ void placement() {
             grSetting.router = GRSetting::GRRouter::CUGR;
             upperBound(iter, 4, UBIter, 1, td);
         }
-        long upHPWL = hpwl();
+        //long upHPWL = hpwl();
 
 #ifdef LIBGD
         drawcell("gp_up_", iter);
@@ -134,13 +134,13 @@ void placement() {
 
         //--Lower Bound
         lowerBound(0.001, pnWeightBegin + (pnWeightEnd - pnWeightBegin) * (iter - 1) / (mainIter - 1), LBIter, LBModeFenceRelax, mainNetModel, 0.0);
-        long loHPWL = hpwl();
+        //long loHPWL = hpwl();
 
 #ifdef LIBGD
         drawcell("gp_lo_", iter);
 #endif
 
-        printlog(LOG_INFO, "[%2d] up=%ld lo=%ld", iter, upHPWL, loHPWL);
+        //printlog(LOG_INFO, "[%2d] up=%ld lo=%ld", iter, upHPWL, loHPWL);
     }
 
     upperBound(mainIter + 1, 4, finalIter, 0, GPModule::TargetDensityEnd);

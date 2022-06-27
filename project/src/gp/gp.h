@@ -1,14 +1,13 @@
 #ifndef _GP_GP_H_
 #define _GP_GP_H_
 
-#include "../tcl/tcl.h"
 #include "gp_data.h"
 
 int gplace(int argc = 0, char** argv = NULL);
 
 namespace gp {
 
-class GPModule : public ripple::ShellModule {
+class GPModule{
 private:
     static std::string _name;
 
@@ -33,14 +32,10 @@ public:
     static bool EnableFence;
     static bool EnableKeepInflate;
     static bool Experimental;
-
-    void registerCommands();
-    void registerOptions();
     void showOptions() const;
 
 public:
-    const string& name() const { return _name; }
-    static bool gplace(ripple::ShellOptions& args, ripple::ShellCmdReturn& ret);
+    const string& name() const { return _name; };
     static bool gplace();
 };
 }

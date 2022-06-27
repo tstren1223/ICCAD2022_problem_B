@@ -1,17 +1,15 @@
 #ifndef _IO_IO_H_
 #define _IO_IO_H_
 
-#include "../tcl/tcl.h"
+
 
 #include <string>
 
 namespace io {
-class IOModule : public ripple::ShellModule {
+class IOModule{
 private:
     static std::string _name;
 
-    void registerCommands();
-    void registerOptions();
     void showOptions() const;
 
 public:
@@ -39,9 +37,7 @@ public:
 public:
     const std::string& name() const { return _name; }
     static bool load();
-    static bool load(ripple::ShellOptions& args, ripple::ShellCmdReturn& ret);
     static bool save();
-    static bool save(ripple::ShellOptions& args, ripple::ShellCmdReturn& ret);
 };
 }
 

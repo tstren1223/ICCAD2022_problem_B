@@ -4,7 +4,6 @@
 #include "../gp/gp.h"
 #include "../gr/gr.h"
 #include "../io/io.h"
-#include "../tcl/tcl.h"
 using namespace db;
 
 #include "ripple.h"
@@ -41,120 +40,35 @@ int Ripple::_run(int argc, char **argv)
         rippleSetting.flow = RippleSetting::PlaceFlow::ICCAD2022;
 
         gp::GPModule::MainGRIterations = 0;
-        Shell::addModule(new io::IOModule);
-        Shell::addModule(new db::DBModule);
+        io::IOModule *io_m=new io::IOModule;
 #ifdef __GP__
-        Shell::addModule(new gp::GPModule);
+        gp::GPModule *gp_m=new gp::GPModule;
 #endif
-        Shell::addModule(new dp::DPModule);
-        Shell::init();
-
-        switch (rippleSetting.flow)
+        dp::DPModule *dp_m=new dp::DPModule;
+        db::DBModule::EdgeSpacing = true;
+        db::DBModule::EnablePG = false;
+        db::DBModule::EnableIOPin = false;
+        // top
+        io_m->load();
+        if (io::IOModule::load_place == false)
         {
-        case RippleSetting::PlaceFlow::Default:
-            db::DBModule::EdgeSpacing = true;
-            db::DBModule::EnablePG = false;
-            db::DBModule::EnableIOPin = true;
-            Shell::proc("load");
             database.setup();
             database.errorCheck();
             printlog(LOG_INFO,
                      "wirelength = %.2lf (scale=%.2lf)",
                      (double)database.getHPWL() / (double)database.siteW,
                      (double)database.siteW);
-            Shell::proc("gplace");
+            #ifdef __GP__
+            gp_m->gplace();
+            #endif
             printlog(LOG_INFO,
                      "wirelength = %.2lf (scale=%.2lf)",
                      (double)database.getHPWL() / (double)database.siteW,
                      (double)database.siteW);
             dp::DPModule::MaxDisp = database.maxDisp * database.siteH / database.siteW;
             dp::DPModule::MaxDensity = database.maxDensity;
-            Shell::proc("dplace");
-            Shell::proc("save");
-            break;
-        case RippleSetting::PlaceFlow::ICCAD2017:
-            db::DBModule::EdgeSpacing = true;
-            db::DBModule::EnablePG = false;
-            db::DBModule::EnableIOPin = true;
-            Shell::proc("load");
-            db::DBModule::setup(true);
-            dp::DPModule::MaxDisp = database.maxDisp * database.siteH / database.siteW;
-            dp::DPModule::MaxDensity = database.maxDensity;
-            Shell::proc("dplace");
-            Shell::proc("save");
-            break;
-        case RippleSetting::PlaceFlow::DAC2016:
-            db::DBModule::EdgeSpacing = false;
-            db::DBModule::EnablePG = false;
-            Shell::proc("load");
-            db::DBModule::setup(true);
-            dp::DPModule::MaxDisp = database.maxDisp * database.siteH / database.siteW;
-            //  dp::DPModule::MaxDensity = database.maxDensity;
-            dp::DPModule::EnablePinAcc = false;
-            dp::DPModule::MLLTotalDisp = true;
-            dp::DPModule::dplace("dac2016");
-            Shell::proc("save");
-            break;
-        case RippleSetting::PlaceFlow::Eval:
-            db::DBModule::EnablePG = false;
-            Shell::proc("load");
-            db::DBModule::setup(true);
-            dp::DPModule::MaxDisp = database.maxDisp * database.siteH / database.siteW;
-            dp::DPModule::MaxDensity = database.maxDensity;
-            dp::DPModule::dplace("eval");
-            //  groute();
-            Shell::proc("save");
-            break;
-        case RippleSetting::PlaceFlow::ICCAD2022:
-            db::DBModule::EdgeSpacing = true;
-            db::DBModule::EnablePG = false;
-            db::DBModule::EnableIOPin = false;
-            // top
-            Shell::proc("load");
-            if (io::IOModule::load_place == false)
-            {
-                database.setup();
-                database.errorCheck();
-                printlog(LOG_INFO,
-                         "wirelength = %.2lf (scale=%.2lf)",
-                         (double)database.getHPWL() / (double)database.siteW,
-                         (double)database.siteW);
-                Shell::proc("gplace");
-                printlog(LOG_INFO,
-                         "wirelength = %.2lf (scale=%.2lf)",
-                         (double)database.getHPWL() / (double)database.siteW,
-                         (double)database.siteW);
-                dp::DPModule::MaxDisp = database.maxDisp * database.siteH / database.siteW;
-                dp::DPModule::MaxDensity = database.maxDensity;
-                Shell::proc("dplace");
-                Shell::proc("save");
-            }
-            // bottom
-            if (!io::IOModule::TOP&&!io::IOModule::ANS)
-            {
-                Shell::proc("load");
-                if (io::IOModule::load_place == false)
-                {
-                    database.setup();
-                    database.errorCheck();
-                    printlog(LOG_INFO,
-                             "wirelength = %.2lf (scale=%.2lf)",
-                             (double)database.getHPWL() / (double)database.siteW,
-                             (double)database.siteW);
-                    Shell::proc("gplace");
-                    printlog(LOG_INFO,
-                             "wirelength = %.2lf (scale=%.2lf)",
-                             (double)database.getHPWL() / (double)database.siteW,
-                             (double)database.siteW);
-                    dp::DPModule::MaxDisp = database.maxDisp * database.siteH / database.siteW;
-                    dp::DPModule::MaxDensity = database.maxDensity;
-                    Shell::proc("dplace");
-                }
-                Shell::proc("save");
-            }
-            break;
-        default:
-            break;
+            dp_m->dplace();
+            io_m->save();
         }
     }
 
@@ -198,22 +112,6 @@ int Ripple::getArgs(int argc, char **argv)
             if (type == "wu2016")
             {
                 io::IOModule::BookshelfVariety = "wu2016";
-            }
-            else if (type == "lin2016")
-            {
-                io::IOModule::BookshelfVariety = "lin2016";
-            }
-            else if (type == "dac2012")
-            {
-                io::IOModule::BookshelfVariety = "dac2012";
-            }
-            else if (type == "iccad2012")
-            {
-                io::IOModule::BookshelfVariety = "iccad2012";
-            }
-            else if (type == "iccad2013")
-            {
-                io::IOModule::BookshelfVariety = "iccad2013";
             }
             else if (type == "iccad2022")
             {

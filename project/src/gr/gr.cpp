@@ -1,7 +1,6 @@
 #include "gr.h"
 #include "../db/db.h"
 #include "../global.h"
-#include "../tcl/register.h"
 #include "cugr.h"
 #include "fastroute.h"
 #include "ripplegr.h"

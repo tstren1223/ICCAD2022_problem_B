@@ -903,7 +903,7 @@ void expandLGRegion(OFBin &ofBin) {
         cout<<"ERROR: expand fail"<<(int)ofBin.exUArea<<" < "<<(int)ofBin.exCArea<<endl;
     }
     if(ofBin.lx==0 && ofBin.ly==0 && ofBin.hx==LGNumX-1 && ofBin.hy==LGNumY-1){
-        cout<<"WARN: expand to chip size"<<endl;
+        //cout<<"WARN: expand to chip size"<<endl;
     }
 }
 #define FAST_LG_UPDATE

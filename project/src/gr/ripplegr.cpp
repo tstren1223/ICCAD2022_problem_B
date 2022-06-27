@@ -299,7 +299,7 @@ bool ripplegr() {
     rippleGRLauncher.initDemandSupplyMap();
     rippleGRLauncher.calcDemandMap();
     rippleGRLauncher.calcSupplyMap();
-    rippleGRLauncher.writeCongestionMap();
+    //rippleGRLauncher.writeCongestionMap();
     return true;
 }
 

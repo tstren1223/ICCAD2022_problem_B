@@ -29,26 +29,6 @@ bool GPModule::EnableFence = true;
 bool GPModule::EnableKeepInflate = false;
 bool GPModule::Experimental = false;
 
-void GPModule::registerCommands() { ripple::Shell::addCommand(this, "gplace", GPModule::gplace); }
-void GPModule::registerOptions() {
-    ripple::Shell::addOption(this, "numThreads", &NumThreads);
-    ripple::Shell::addOption(this, "initIter", &InitIterations);
-    ripple::Shell::addOption(this, "mainWireIter", &MainWLIterations);
-    ripple::Shell::addOption(this, "mainCongIter", &MainCongIterations);
-    ripple::Shell::addOption(this, "mainGRIter", &MainGRIterations);
-    ripple::Shell::addOption(this, "lbIter", &LowerBoundIterations);
-    ripple::Shell::addOption(this, "ubIter", &UpperBoundIterations);
-    ripple::Shell::addOption(this, "finalIter", &FinalIterations);
-    ripple::Shell::addOption(this, "pseudoNetWeightBegin", &PseudoNetWeightBegin);
-    ripple::Shell::addOption(this, "pseudoNetWeightEnd", &PseudoNetWeightEnd);
-    ripple::Shell::addOption(this, "targetDensityBegin", &TargetDensityBegin);
-    ripple::Shell::addOption(this, "targetDensityEnd", &TargetDensityEnd);
-    ripple::Shell::addOption(this, "initNetModel", &InitNetModel);
-    ripple::Shell::addOption(this, "mainNetModel", &MainNetModel);
-    ripple::Shell::addOption(this, "enableFence", &EnableFence);
-    ripple::Shell::addOption(this, "enableKeepInflate", &EnableKeepInflate);
-    ripple::Shell::addOption(this, "experimental", &Experimental);
-}
 void GPModule::showOptions() const {
     printlog(LOG_INFO, "numThreads           : %d", NumThreads);
     printlog(LOG_INFO, "initIter             : %d", InitIterations);
@@ -69,41 +49,8 @@ void GPModule::showOptions() const {
     printlog(LOG_INFO, "experimental         : %s", Experimental ? "true" : "false");
 }
 
-bool GPModule::gplace(ripple::ShellOptions& args, ripple::ShellCmdReturn& ret) {
-    gp_copy_in(true);
-    gp_main();
-    gp_copy_out();
-    nameMap.clear();
-    cellName.clear();
-    netCell.clear();
-    netPinX.clear();
-    netPinY.clear();
-    netWeight.clear();
-    netNDR.clear();
-    cellNet.clear();
-    cellPin.clear();
-    cellX.clear();
-    cellY.clear();
-    cellW.clear();
-    cellAW.clear();
-    cellH.clear();
-    cellAW.clear();
-    cellFenceX.clear();
-    cellFenceY.clear();
-    cellFenceDist.clear();
-    cellFenceRect.clear();
-    cellFence.clear();
-    fenceRectLX.clear();
-    fenceRectLY.clear();
-    fenceRectHX.clear();
-    fenceRectHY.clear();
-    return true;
-}
 
 bool GPModule::gplace() {
-#ifndef NDEBUG
-    ripple::Shell::showOptions(_name);
-#endif
     gp_copy_in(true);
     gp_main();
     gp_copy_out();

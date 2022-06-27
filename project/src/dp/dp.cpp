@@ -1,5 +1,4 @@
 #include "dp.h"
-#include "../tcl/register.h"
 #include "dp_data.h"
 #include "dp_global.h"
 using namespace dp;
@@ -42,46 +41,6 @@ unsigned DPModule::MLLMaxDensity = 1000;
 bool DPModule::MLLUseILP = false;
 bool DPModule::MLLTotalDisp = false;
 
-void DPModule::registerCommands() {
-    ripple::Shell::addCommand(this, "dplace", DPModule::dplace);
-    ripple::Shell::addAlias("dp", "dplace");
-}
-
-void DPModule::registerOptions() {
-    ripple::Shell::addOption(this, "cpu", &CPU);
-    ripple::Shell::addOption(this, "maxDisp", &MaxDisp);
-    ripple::Shell::addOption(this, "maxDensity", &MaxDensity);
-    ripple::Shell::addOption(this, "defEval", &DefEval);
-    ripple::Shell::addOption(this, "maxLGIter", &MaxLGIter);
-    ripple::Shell::addOption(this, "maxGMIter", &MaxGMIter);
-    ripple::Shell::addOption(this, "maxLMIter", &MaxLMIter);
-    ripple::Shell::addOption(this, "maxMPIter", &MaxMPIter);
-    ripple::Shell::addOption(this, "LGStepSize", &LGStepSize);
-    ripple::Shell::addOption(this, "LGThresholdBase", &LGThresholdBase);
-    ripple::Shell::addOption(this, "LGThresholdStep", &LGThresholdStep);
-    ripple::Shell::addOption(this, "LGTrial", &LGTrial);
-    ripple::Shell::addOption(this, "LGOperRegSize", &LGOperRegSize);
-    ripple::Shell::addOption(this, "GMEnable", &GMEnable);
-    ripple::Shell::addOption(this, "GMThresholdBase", &GMThresholdBase);
-    ripple::Shell::addOption(this, "GMThresholdStep", &GMThresholdStep);
-    ripple::Shell::addOption(this, "GMTrial", &GMTrial);
-    ripple::Shell::addOption(this, "LMThresholdBase", &LMThresholdBase);
-    ripple::Shell::addOption(this, "LMThresholdStep", &LMThresholdStep);
-    ripple::Shell::addOption(this, "LMTrial", &LMTrial);
-    ripple::Shell::addOption(this, "enableLocalVert", &EnableLocalVert);
-    ripple::Shell::addOption(this, "enableLocalReorder", &EnableLocalReorder);
-    ripple::Shell::addOption(this, "enableLocalCompact", &EnableLocalCompact);
-    ripple::Shell::addOption(this, "enablePinAcc", &EnablePinAcc);
-    ripple::Shell::addOption(this, "enablePinAccRpt", &EnablePinAccRpt);
-
-    ripple::Shell::addOption(this, "MLLAccuracy", &MLLAccuracy);
-    ripple::Shell::addOption(this, "MLLDispFromInput", &MLLDispFromInput);
-    ripple::Shell::addOption(this, "MLLPGAlign", &MLLPGAlign);
-    ripple::Shell::addOption(this, "MLLPinCost", &MLLPinCost);
-    ripple::Shell::addOption(this, "MLLMaxDensity", &MLLMaxDensity);
-    ripple::Shell::addOption(this, "MLLUseILP", &MLLUseILP);
-    ripple::Shell::addOption(this, "MLLTotalDisp", &MLLTotalDisp);
-}
 
 void DPModule::showOptions() const {
     printlog(LOG_INFO, "cpu                : %u", CPU);
@@ -119,23 +78,10 @@ void DPModule::showOptions() const {
     printlog(LOG_INFO, "MLLTotalDisp       : %s", MLLTotalDisp ? "true" : "false");
 }
 
-bool DPModule::dplace(ripple::ShellOptions& args, ripple::ShellCmdReturn& ret) {
-#ifndef NDEBUG
-    ripple::Shell::showOptions(_name);
-#endif
 
-    dplacer = new DPlacer();
-    dplacer->input();
-    dplacer->place();
-    dplacer->output();
-    delete dplacer;
-    return true;
-}
 
 bool DPModule::dplace(const string& flowName) {
-#ifndef NDEBUG
-    ripple::Shell::showOptions(_name);
-#endif
+
 
     dplacer = new DPlacer();
     dplacer->input();

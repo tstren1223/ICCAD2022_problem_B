@@ -204,14 +204,14 @@ void loadCongestedList(int isH) {
 }
 
 bool cellInflation(int isHorizontal, double restoreRatio) {
-    cout << "Restore ratio = " << restoreRatio << endl;
+    //cout << "Restore ratio = " << restoreRatio << endl;
     setDirection(!isHorizontal);
     loadCongestedList(!isHorizontal);
     setDirection(isHorizontal);
     loadCongestedList(isHorizontal);
 
     if (congTiles[nowDir].size() == 0) {
-        cout << "WARN: No congestion, abort cell inflation" << endl;
+        //cout << "WARN: No congestion, abort cell inflation" << endl;
         return false;
     }
 
@@ -235,12 +235,12 @@ bool cellInflation(int isHorizontal, double restoreRatio) {
         cellRatio[i] = min(cellRatio[i], maxCellInflateRatio);
     }
 
-    double siteArea = (double)database.siteH / (double)database.siteW;
-    double beforeFreeArea = database.siteMap.nPlaceable * siteArea;
+    //double siteArea = (double)database.siteH / (double)database.siteW;
+    //double beforeFreeArea = database.siteMap.nPlaceable * siteArea;
     double beforeCellArea = 0.0;
     double afterCellArea = 0.0;
-    double limitCellArea = 0.0;
-    double limitingScale = 1.0;
+    //double limitCellArea = 0.0;
+    //double limitingScale = 1.0;
 
     for (int i = 0; i < numCells; i++) {
         double cellW = cellAW[i];
@@ -253,12 +253,12 @@ bool cellInflation(int isHorizontal, double restoreRatio) {
         }
         afterCellArea += (cellW * cellH);
     }
-    limitCellArea = beforeCellArea + (beforeFreeArea - beforeCellArea) * maxFreeSpaceForInflate;
-    if (afterCellArea > limitCellArea) {
+    //limitCellArea = beforeCellArea + (beforeFreeArea - beforeCellArea) * maxFreeSpaceForInflate;
+    /*if (afterCellArea > limitCellArea) {
         // inflate too much
         limitingScale = limitCellArea / afterCellArea;
         cout << "inflate too much, limit scale=" << limitingScale << endl;
-    }
+    }*/
 
     if (restoreRatio < 0) {
         for (int i = 0; i < numCells; i++) {

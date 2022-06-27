@@ -477,27 +477,23 @@ void Database::SetupRows() {
         if (!powerNet.getRowPower(ly, hy, row->_topPower, row->_botPower)) {
             if (topNormal && row->topPower() == 'x') {
                 if (y + 1 == nSitesY) {
-                    printlog(LOG_WARN, "Top power rail of the row at y=%d is not connected to power rail", row->y());
+                   // printlog(LOG_WARN, "Top power rail of the row at y=%d is not connected to power rail", row->y());
                 } else {
-                    printlog(LOG_ERROR, "Top power rail of the row at y=%d is not connected to power rail", row->y());
+                    //printlog(LOG_ERROR, "Top power rail of the row at y=%d is not connected to power rail", row->y());
                     topNormal = false;
                 }
             }
             if (botNormal && row->botPower() == 'x') {
                 if (y) {
-                    printlog(
-                        LOG_ERROR, "Bottom power rail of the row at y=%d is not connected to power rail", row->y());
+                    //printlog(LOG_ERROR, "Bottom power rail of the row at y=%d is not connected to power rail", row->y());
                     botNormal = false;
                 } else {
-                    printlog(LOG_WARN, "Bottom power rail of the row at y=%d is not connected to power rail", row->y());
+                    //printlog(LOG_WARN, "Bottom power rail of the row at y=%d is not connected to power rail", row->y());
                 }
             }
         }
         if (shrNormal && row->topPower() == row->botPower()) {
-            printlog(LOG_ERROR,
-                     "Top and Bottom power rail of the row at y=%d share the same power %c",
-                     row->y(),
-                     row->topPower());
+            //printlog(LOG_ERROR,"Top and Bottom power rail of the row at y=%d share the same power %c",row->y(),row->topPower());
             shrNormal = false;
         }
     }
@@ -614,7 +610,7 @@ void Database::SetupGRGrid() {
         Layer* layer = getRLayer(i);
         Track& track = layer->track;
         if (track.direction == 'x') {
-            printlog(LOG_WARN, "track information missing for layer: %s", layer->name().c_str());
+            //printlog(LOG_WARN, "track information missing for layer: %s", layer->name().c_str());
             continue;
         }
         printlog(LOG_VERBOSE,
@@ -659,11 +655,7 @@ void Database::SetupGRGrid() {
             numGCellX = (numTracksX - 1) / gcellTrackX + 1;
             stepGCellX = minPitchV * gcellTrackX;
         }
-        printlog(LOG_INFO,
-                 "Can't detect GcellGrid X Settings in DEF, set gcellTrackX=%d numGCellX=%u step=%d",
-                 gcellTrackX,
-                 numGCellX,
-                 stepGCellX);
+        //printlog(LOG_INFO,"Can't detect GcellGrid X Settings in DEF, set gcellTrackX=%d numGCellX=%u step=%d",gcellTrackX,numGCellX,stepGCellX);
     }
 
     if (!numGCellY) {
@@ -675,11 +667,7 @@ void Database::SetupGRGrid() {
             numGCellY = (numTracksY - 1) / gcellTrackY + 1;
             stepGCellY = minPitchH * gcellTrackY;
         }
-        printlog(LOG_INFO,
-                 "Can't detect GcellGrid Y Settings in DEF, set gcellTrackY=%d numGCellY=%u step=%d",
-                 gcellTrackY,
-                 numGCellY,
-                 stepGCellY);
+        //printlog(LOG_INFO,"Can't detect GcellGrid Y Settings in DEF, set gcellTrackY=%d numGCellY=%u step=%d",gcellTrackY,numGCellY,stepGCellY);
     }
 #endif
 
@@ -962,10 +950,10 @@ void Database::errorCheck(bool autoFix) {
                 printlog(LOG_WARN, "non horizontal row detected");
                 break;
             case E_NO_NET_DRIVING_PIN:
-                printlog(LOG_WARN, "missing net driving pin");
+                //printlog(LOG_WARN, "missing net driving pin");
                 break;
             case E_MULTIPLE_NET_DRIVING_PIN:
-                printlog(LOG_WARN, "multiple net driving pin");
+                //printlog(LOG_WARN, "multiple net driving pin");
                 break;
             default:
                 break;
@@ -981,12 +969,6 @@ bool DBModule::EnablePG = false;
 bool DBModule::EnableIOPin = true;
 std::string DBModule::LogFolderName = "ripple_" + utils::Timer::getCurTimeStr();
 
-void DBModule::registerOptions() {
-    ripple::Shell::addOption(this, "edgeSpacing", &EdgeSpacing);
-    ripple::Shell::addOption(this, "enableFence", &EnableFence);
-    ripple::Shell::addOption(this, "enablePG", &EnablePG);
-    ripple::Shell::addOption(this, "enableIOPin", &EnableIOPin);
-}
 
 void DBModule::showOptions() const {
     printlog(LOG_INFO, "edgeSpacing        : %s", EdgeSpacing ? "true" : "false");

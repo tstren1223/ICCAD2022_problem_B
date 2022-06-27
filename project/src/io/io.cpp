@@ -2,10 +2,8 @@
 
 #include "../db/db.h"
 #include "../global.h"
-#include "../tcl/register.h"
 
 using namespace io;
-
 std::string IOModule::_name = "io";
 
 std::string IOModule::Format = "lefdef";
@@ -27,37 +25,6 @@ std::string io::IOModule::Verilog = "";
 std::string io::IOModule::Liberty = "";
 std::string io::IOModule::Size = "";
 std::string io::IOModule::Constraints = "";
-int load_num = 0;
-void io::IOModule::registerCommands()
-{
-    ripple::Shell::addCommand(this, "load", IOModule::load);
-    ripple::Shell::addCommand(this, "save", IOModule::save);
-
-    ripple::Shell::addArgument(this, "load", "format", (std::string *)nullptr, "");
-    ripple::Shell::addArgument(this, "load", "1", (std::string *)nullptr, "");
-    ripple::Shell::addArgument(this, "load", "2", (std::string *)nullptr, "");
-}
-
-void io::IOModule::registerOptions()
-{
-    ripple::Shell::addOption(this, "format", &IOModule::Format);
-
-    ripple::Shell::addOption(this, "bookshelfAux", &IOModule::BookshelfAux);
-    ripple::Shell::addOption(this, "bookshelfPl", &IOModule::BookshelfPl);
-    ripple::Shell::addOption(this, "bookshelfVariety", &IOModule::BookshelfVariety);
-    ripple::Shell::addOption(this, "bookshelfPlacement", &IOModule::BookshelfPlacement);
-
-    ripple::Shell::addOption(this, "lefTech", &IOModule::LefTech);
-    ripple::Shell::addOption(this, "lefCell", &IOModule::LefCell);
-    ripple::Shell::addOption(this, "defFloorplan", &IOModule::DefFloorplan);
-    ripple::Shell::addOption(this, "defCell", &IOModule::DefCell);
-    ripple::Shell::addOption(this, "defPlacement", &IOModule::DefPlacement);
-
-    ripple::Shell::addOption(this, "verilog", &IOModule::Verilog);
-    ripple::Shell::addOption(this, "liberty", &IOModule::Liberty);
-    ripple::Shell::addOption(this, "size", &IOModule::Size);
-    ripple::Shell::addOption(this, "constraints", &IOModule::Constraints);
-}
 
 void IOModule::showOptions() const
 {
@@ -81,120 +48,17 @@ bool io::IOModule::load()
     if (BookshelfAux.length() > 0 && BookshelfPl.length())
     {
         Format = "bookshelf";
-        if (BookshelfVariety != "ICCAD2022")
-            database.readBSAux(BookshelfAux, BookshelfPl);
-        else
-        {
-            database.readICCAD2022_setup(BookshelfAux, load_num,load_place,TOP,ANS);
-        }
-        load_num++;
-    }
-    if (LefTech.length() > 0)
-    {
-        Format = "lefdef";
-        database.readLEF(LefTech);
-    }
-    if (LefCell.length() > 0)
-    {
-        Format = "lefdef";
-        database.readLEF(LefCell);
-    }
-    if (DefCell.length())
-    {
-        Format = "lefdef";
-        database.readDEF(DefCell);
-        //  database.readDEFPG(DefCell);
-    }
-    else if (DefFloorplan.length())
-    {
-        database.readDEF(DefFloorplan);
-        //  database.readDEFPG(DefFloorplan);
-    }
-    if (Verilog.length() > 0)
-    {
-        // database.readVerilog(Verilog);
-    }
-    if (Liberty.length() > 0)
-    {
-        // database.readLiberty(Liberty);
-    }
-    if (Size.length() > 0)
-    {
-        database.readSize(Size);
-    }
-    if (Constraints.length() > 0)
-    {
-        database.readConstraints(Constraints);
+        database.readICCAD2022_setup(BookshelfAux);
     }
     return true;
 }
 
-bool io::IOModule::load(ripple::ShellOptions &options, ripple::ShellCmdReturn &ret)
-{
-    std::string format, file1, file2;
-    options.getOption("format", format);
-    options.getOption("1", file1);
-    options.getOption("2", file2);
-
-    if (format == "lef")
-    {
-        database.readLEF(file1);
-    }
-    else if (format == "def")
-    {
-        database.readDEF(file1);
-        //  database.readDEFPG(file1);
-    }
-    else if (format == "bookshelf")
-    {
-        database.readBSAux(file1, file2);
-    }
-    else if (format == "verilog")
-    {
-        database.readVerilog(file1);
-    }
-    else if (format == "liberty")
-    {
-        // database.readLiberty(file1);
-    }
-    else if (format == "size")
-    {
-        database.readSize(file1);
-    }
-    else if (format == "constraints")
-    {
-        database.readConstraints(file1);
-    }
-    else if (format == "")
-    {
-        load();
-    }
-    return true;
-}
 
 bool io::IOModule::save()
 {
     if (Format == "bookshelf" && BookshelfPlacement.size())
     {
-        if (BookshelfVariety != "ICCAD2022")
-            database.writeBSPl(BookshelfPlacement);
-        else
-        {
-            database.writeICCAD2022(BookshelfPlacement,load_num,load_place,TOP,ANS);
-        }
-    }
-    else if (Format == "lefdef" && DefPlacement.size())
-    {
-        if (DefCell.size())
-        {
-            database.writeICCAD2017(DefCell, DefPlacement);
-        }
-        else if (DefFloorplan.size())
-        {
-            database.writeICCAD2017(DefFloorplan, DefPlacement);
-        }
+        database.writeICCAD2022(BookshelfPlacement);
     }
     return true;
 }
-
-bool io::IOModule::save(ripple::ShellOptions &options, ripple::ShellCmdReturn &ret) { return save(); }
