@@ -1,0 +1,769 @@
+make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 3.82.90
+# Built for i686-pc-mingw32
+# Copyright (C) 1988-2012 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
+ 
+
+# Make data base, printed on Tue Jun 28 14:33:53 2022
+
+# Variables
+
+# automatic
+<D = $(patsubst %/,%,$(patsubst %\,%,$(dir $<)))
+# automatic
+?F = $(notdir $?)
+# default
+.SHELLFLAGS := -c
+# makefile
+MAKEFLAGS = Rrqp
+# makefile (from 'Makefile', line 74)
+DP_OBJS = dp/dp.o dp/dp_data.o dp/dp_datalocal.o dp/dp_dataglobal.o dp/dp_draw.o dp/dp_move.o dp/dp_movemll.o dp/dp_movesr.o dp/dp_form.o dp/dp_place.o
+# makefile (from 'Makefile', line 11)
+GP_OBJS = 
+# environment
+VSCODE_LOG_NATIVE = false
+# automatic
+?D =  
+$(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
+# automatic
+@D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
+# environment
+HOMEDRIVE = C:
+# automatic
+@F = $(notdir $@)
+# automatic
+^D = $(patsubst %/,%,$(patsubst %\,%,$(dir $^)))
+# makefile
+CURDIR := c:/Users/tstre/OneDrive/�ୱ/project/project/src
+# default
+SHELL := sh.exe
+# environment
+WINDIR = C:\WINDOWS
+# environment
+VSCODE_NLS_CONFIG = {"locale":"zh-tw","availableLanguages":{"*":"zh-tw"},"_languagePackId":"ac66bbc6dbbb1314a06c6472917732ef.zh-tw","_translationsConfigFile":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\ac66bbc6dbbb1314a06c6472917732ef.zh-tw\\tcf.json","_cacheRoot":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\ac66bbc6dbbb1314a06c6472917732ef.zh-tw","_resolvedLanguagePackCoreLocation":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\ac66bbc6dbbb1314a06c6472917732ef.zh-tw\\30d9c6cd9483b2cc586687151bcbcd635f373630","_corruptedFile":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\ac66bbc6dbbb1314a06c6472917732ef.zh-tw\\corrupted.info","_languagePackSupport":true}
+# environment
+VBOX_MSI_INSTALL_PATH = C:\Program Files\Oracle\VirtualBox\
+# environment
+ONEDRIVE = C:\Users\tstre\OneDrive
+# environment
+PATHEXT = .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+# makefile (from 'Makefile', line 1)
+MAKEFILE_LIST :=  Makefile
+# environment
+FPS_BROWSER_USER_PROFILE_STRING = Default
+# environment
+TMP = C:\Users\tstre\AppData\Local\Temp
+# makefile (from 'Makefile', line 75)
+IO_OBJS = io/file_bkshf_db.o  io/utils.o io/io.o
+# environment
+VSCODE_VERBOSE_LOGGING = true
+# environment
+PATH_TO_FX = C:\Program Files\Java\javafx-sdk-17.0.2\lib
+# environment
+PROGRAMW6432 = C:\Program Files
+# makefile (from 'Makefile', line 82)
+OBJS = $(CC_OBJS) $(DB_OBJS) $(DP_OBJS) $(GP_OBJS) $(GR_OBJS) $(IO_OBJS) $(RIPPLE_OBJS) $(STA_OBJS)  $(UT_OBJS) $(VI_OBJS)
+# environment
+PROGRAMDATA = C:\ProgramData
+# environment
+VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-d2205be7-f382-48ea-9886-335f4b44e85d-sock
+# environment
+VSCODE_CWD = C:\Users\tstre\OneDrive\�ୱ\project\project\src
+# makefile (from 'Makefile', line 73)
+DB_OBJS = db/db.o db/db_cell.o db/db_layer.o db/db_net.o db/db_pin.o db/db_region.o db/db_drc.o db/db_geom.o db/db_route.o db/db_get.o db/db_set.o db/db_add.o db/db_map.o db/db_check.o db/db_place.o
+# environment
+PATH = C:\Program Files\Eclipse Adoptium\jdk-17.0.3.7-hotspot\bin;C:\Program Files\Java\jdk-17.0.2\bin;C:\MinGW\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\LLVM\bin;C:\Program Files\Intel\WiFi\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\Program Files\Go\bin;C:\GnuWin32\bin;C:\GnuWin32\bin\bison.exe;C:\GnuWin32\bin\flex.exe;C:\Program Files\Git\cmd;C:\Program Files\Git LFS;C:\Program Files\dotnet\;C:\Qt\6.3.1\mingw_64\bin;C:\Users\tstre\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\tstre\AppData\Local\Programs\Python\Python310\;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\tstre\AppData\Local\Microsoft\WindowsApps;C:\Users\tstre\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\tstre\go\bin;C:\GnuWin32\bin;C:\GnuWin32\bin\bison.exe;C:\GnuWin32\bin\flex.exe;C:\Users\tstre\AppData\Local\GitHubDesktop\bin;C:\Users\tstre\.dotnet\tools
+# makefile (from 'Makefile', line 12)
+GR_OBJS = 
+# makefile (from 'Makefile', line 80)
+LIB_OBJS = def58/lib/libdef.a lef58/lib/liblef.a $(LEMON_LIBS)
+# makefile (from 'Makefile', line 24)
+LEMON_LIBS = $(LEMON_PATH)/lib/libemon.a
+# environment
+COMMONPROGRAMW6432 = C:\Program Files\Common Files
+# environment
+ZES_ENABLE_SYSMAN = 1
+# environment
+GIT_LFS_PATH = C:\Program Files\Git LFS
+# makefile (from 'Makefile', line 87)
+AFILE = ripple.a
+# environment
+PROCESSOR_ARCHITECTURE = x86
+# makefile (from 'Makefile', line 76)
+UT_OBJS = ut/log.o ut/timer.o ut/utils.o
+# environment
+USERPROFILE = C:\Users\tstre
+# environment
+ALLUSERSPROFILE = C:\ProgramData
+# environment
+GOPATH = C:\Users\tstre\go
+# environment
+SOPC_KIT_NIOS2 = D:\Quartus2\nios2eds
+# makefile (from 'Makefile', line 68)
+AR = ar rcs
+# environment
+VSCODE_LOG_STACK = false
+# environment
+NUMBER_OF_PROCESSORS = 8
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# environment
+QT = C:\QT\6.3.0\msvc2019_64\bin
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver
+# makefile (from 'Makefile', line 70)
+TAG = ctags
+# makefile (from 'Makefile', line 78)
+VI_OBJS = vi/vi.o vi/draw.o vi/item_pos.o vi/vi_db.o
+# automatic
+%F = $(notdir $%)
+# environment
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_19524_PK 
+SUESZKJDAYVFKP
+# makefile (from 'Makefile', line 51)
+OPT = -O3 $(GD_OPT) $(EXP_OPT) $(GP_OPT)
+# environment
+VSCODE_PIPE_LOGGING = true
+# environment
+COMPUTERNAME = DESKTOP-R0LBQQO
+# makefile (from 'Makefile', line 77)
+STA_OBJS = sta/lib.o sta/sta.o
+# environment
+PROGRAMFILES = C:\Program Files (x86)
+# environment
+DRIVERDATA = C:\Windows\System32\Drivers\DriverData
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = undefined
+# environment
+USERNAME = tstre
+# environment
+PUBLIC = C:\Users\Public
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# makefile (from 'Makefile', line 13)
+GP_OPT = 
+# makefile (from 'Makefile', line 72)
+CC_OBJS = main.o
+# makefile (from 'Makefile', line 79)
+RIPPLE_OBJS = ripple/ripple.o 
+# environment
+VSCODE_CODE_CACHE_PATH = C:\Users\tstre\AppData\Roaming\Code\CachedData\30d9c6cd9483b2cc586687151bcbcd635f373630
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+# environment
+COMMONPROGRAMFILES = C:\Program Files (x86)\Common Files
+# environment
+LOGONSERVER = \\DESKTOP-R0LBQQO
+# makefile (from 'Makefile', line 3)
+GD_OPT = 
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# environment
+USERDOMAIN = DESKTOP-R0LBQQO
+# makefile (from 'Makefile', line 23)
+LEMON_INC = -I$(LEMON_PATH)/include
+# environment
+MAKELEVEL := 0
+# default
+MAKE = $(MAKE_COMMAND)
+# default
+MAKECMDGOALS := all
+# makefile (from 'Makefile', line 86)
+BFILE = placer
+# makefile (from 'Makefile', line 84)
+SRCS = ${OBJS:%.o=%.cpp}
+# makefile (from 'Makefile', line 53)
+CXXFLAG = -std=c++17
+# default
+MAKE_VERSION := 3.82.90
+# makefile
+.DEFAULT_GOAL := all
+# environment
+CLASSPATH = .;
+# environment
+PROGRAMFILES(X86) = C:\Program Files (x86)
+# automatic
+%D = $(patsubst %/,%,$(patsubst %\,%,$(dir $%)))
+# environment
+LOCALAPPDATA = C:\Users\tstre\AppData\Local
+# environment
+PSMODULEPATH = C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
+# default
+MAKE_COMMAND := make.exe
+# makefile (from 'Makefile', line 61)
+INC = $(LEMON_INC) -I.
+# environment
+PROCESSOR_ARCHITEW6432 = AMD64
+# default
+.VARIABLES := 
+# automatic
+*F = $(notdir $*)
+# environment
+PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 142 Stepping 10, GenuineIntel
+# environment
+OS = Windows_NT
+# environment
+VSCODE_IPC_HOOK = \\.\pipe\01317d538d75217dee263d604633d4c3-1.68.1-main-sock
+# makefile (from 'Makefile', line 22)
+LEMON_PATH = ./lemon
+# environment
+HOMEPATH = \Users\tstre
+# environment
+COMMONPROGRAMFILES(X86) = C:\Program Files (x86)\Common Files
+# environment
+PROMPT = $P$G
+# environment
+MFLAGS = -Rrqp
+# automatic
+*D = $(patsubst %/,%,$(patsubst %\,%,$(dir $*)))
+# environment
+SYSTEMROOT = C:\WINDOWS
+# automatic
++D = $(patsubst %/,%,$(patsubst %\,%,$(dir $+)))
+# automatic
++F = $(notdir $+)
+# makefile (from 'Makefile', line 64)
+target = bin
+# environment
+APPDATA = C:\Users\tstre\AppData\Roaming
+# environment
+TEMP = C:\Users\tstre\AppData\Local\Temp
+# makefile (from 'Makefile', line 60)
+WFLAG = -Wall -Werror
+# environment
+COMSPEC = C:\WINDOWS\system32\cmd.exe
+# default
+MAKEFILES := 
+# environment
+QUARTUS_ROOTDIR = D:\Quartus2\quartus
+# automatic
+<F = $(notdir $<)
+# makefile (from 'Makefile', line 89)
+define copy_build
+	mkdir -p ../$(target)
+	cp -u $(BFILE) $(GR_BFILE) ../$(target)/
+endef
+# makefile (from 'Makefile', line 69)
+CXXPROC = $(CXX) $(OPT) $(WFLAG) $(CXXFLAG) $(INC)
+# environment
+LC_ALL = C
+# makefile (from 'Makefile', line 52)
+LIBS = -pthread -ldl $(GD_LIBS) 
+# automatic
+^F = $(notdir $^)
+# makefile (from 'Makefile', line 85)
+DEPS = ${OBJS:%.o=%.d}
+# default
+SUFFIXES := 
+# environment
+SYSTEMDRIVE 
+ = C:
+# environment
+SESSIONNAME = Console
+# environment
+PROCESSOR_REVISION = 8e0a
+# default
+.INCLUDE_DIRS = C:/MinGW/include
+# default
+.RECIPEPREFIX := 
+# makefile (from 'Makefile', line 10)
+GR_BFILE = 
+# environment
+LANG = C
+# environment
+PROCESSOR_LEVEL = 6
+# environment
+FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
+# environment
+VSCODE_PID = 19524
+# makefile (from 'Makefile', line 2)
+GD_LIBS = 
+# environment
+USERDOMAIN_ROAMINGPROFILE = DESKTOP-R0LBQQO
+# variable set hash-table stats:
+# Load=133/1024=13%, Rehash=0, Collisions=24/197=12%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# C:\Qt\6.3.1\mingw_64\bin (key C:/Qt/6.3.1/mingw_64/bin, mtime 1655882352): 342 files, no impossibilities.
+# C:\Program Files\Intel\WiFi\bin\ (key C:/Program Files/Intel/WiFi/bin/, mtime 1651335197): 28 files, no impossibilities.
+# C:\Program Files\Common Files\Intel\WirelessCommon\ (key C:/Program Files/Common Files/Intel/WirelessCommon/, mtime 1651335182): 6 files, no impossib 
+ilities.
+# C:\WINDOWS\System32\WindowsPowerShell\v1.0\ (key C:/WINDOWS/System32/WindowsPowerShell/v1.0/, mtime 1651040709): 31 files, no impossibilities.
+# C:\Users\tstre\go\bin (key C:/Users/tstre/go/bin, mtime 1655737079): 3 files, no impossibilities.
+# . (key c:/Users/tstre/OneDrive/�ୱ/project/project/src, mtime 1656394678): 23 files, no impossibilities.
+# C:\Program Files\Git LFS (key C:/Program Files/Git LFS, mtime 1655548552): 5 files, no impossibilities.
+# C:\Program Files\MySQL\MySQL Shell 8.0\bin 
+\ (key C:/Program Files/MySQL/MySQL Shell 8.0/bin/, mtime 1650897397): 9 files, no impossibilities.
+# C:\Program Files\Git\cmd (key C:/Program Files/Git/cmd, mtime 1652253985): 8 files, no impossibilities.
+# C:\WINDOWS\System32\OpenSSH\: could not be stat'd.
+# C:\GnuWin32\bin (key C:/GnuWin32/bin, mtime 1651995944): 11 files, no impossibilities.
+# C:\MinGW\bin (key C:/MinGW/bin, mtime 1651994413): 282 files, no impossibilities.
+# C:\WINDOWS (key C:/WINDOWS, mtime 1650899148): 113 files, no impossibilities.
+# C:\Users\tstre\AppData\Local\Microsoft\WindowsApps (key C:/Users/tstre/AppData/Local/Microsoft/WindowsApps, mtime 1656027751): 15 files, no impossibilities.
+# C:\Program Files\LLVM\bin (key C:/Program Files/LLVM/bin, mtime 1651301763): 120 files, no impossibilities.
+# C:\GnuWin32\bin\flex.exe (key C:/GnuWin32/bin/flex.exe, mtime 1081375010): could not be opened.
+# C:\Users\tstre\AppData\Local\GitHubDesktop\bin (key C:/Users/tstre/AppData/Local/GitHubDesktop/bin, mtime 1655551382): 4 files, no impossibilities.
+# C:\Users\tstre\AppData\Local\Programs\Microsoft VS Code\bin (key C:/Users/tstre/AppData/Local/Programs/Microsoft VS Code/bin, mtime 1655466750): 4 files, no impossibilities.
+# C:\Program Files\Go\bin (key C:/Program Files/Go/bin, mtime 1651995117): 4 files, no impossibilities.
+# C:\WINDOWS\System32\Wbem (key C:/WINDOWS/System32/Wbem, mtime 1655487748): 171 files, no impossibilities.
+# C:\Program Files\Java\jdk-17.0.2\bin (key C:/Program Files/Java/jdk-17.0.2/bin, mtime 1650895329): 123 files, no impo 
+ssibilities.
+# C:\Users\tstre\AppData\Local\Programs\Python\Python310\ (key C:/Users/tstre/AppData/Local/Programs/Python/Python310/, mtime 1652950131): 19 files, no impossibilities.
+# C:\Users\tstre\AppData\Local\Programs\Python\Python310\Scripts\ (key C:/Users/tstre/AppData/Local/Programs/Python/Python310/Scripts/, mtime 1656130332): 17 files, no impossibilities.
+# C:\GnuWin32\bin\bison.exe (key C:/GnuWin32/bin/bison.exe, mtime 1241468228): could not be opened.
+# C:\Program Files\dotnet\ (key C:/Program Files/dotnet/, mtime 1655737296): 13 files, no impossibilities.
+# C:\Program Files\Eclipse Adoptium\jdk-17.0.3.7-hotspot\bin (key C:/Program Files/Eclipse Adoptium/jdk-17.0.3.7-hotspot/bin, mtime 1655739101): 122 files, no impossibilities.
+# C:\WINDOWS\system32 (key C:/WINDOWS/system32, mtime 1655742393): 2889 files, no impossibilities.
+# C:\Users\tstre\.dotnet\tools: could not be stat'd.
+
+# 4362 files, no impossibilities in 28 directories.
+
+# Implicit Rules
+
+%.o: %.cpp
+#  recipe to execute (from 'Makefile', line 132):
+	$(CXXPROC) -o $*.o -c $*.cpp
+
+# 1 implicit rules, 0 (0.0%) terminal.
+
+# Files
+
+# Not a target:
+dp/dp.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+vi/vi.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+ut/utils.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+all: err plac 
+er
+#  Phony target (prerequisite of .PHONY).
+#  Command line target.
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/15=0%
+
+io: io/file_bkshf_db.o io/utils.o io/io.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 115):
+	$(CXXPROC) -o $(BFILE) $(OBJS) $(LIB_OBJS) $(LIBS)
+	$(call copy_build)
+
+.PHONY: all install db dp gp io clean tags
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+db/db_check.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+dp/dp_place.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+dp: dp/dp.o dp/dp_data.o dp/dp_datalocal.o dp/dp_dataglobal.o dp/dp_draw.o dp/dp_move.o dp/dp_movemll.o dp/dp_movesr.o dp/dp_form.o dp/dp_place.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 107):
+	$(CXXPROC) -o $(BFILE) $(OBJS) $(LIB_OBJS) $(LIBS)
+	$(call copy_build)
+
+# Not a target:
+dp/dp_dataglobal.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+io/utils.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.SUFFIXES:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+tags:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 143):
+	cscope  
+-Rbq
+	ctags -R
+
+# Not a target:
+Makefile:
+#  Implicit rule search has been done.
+#  Last modified 2022-06-27 22:17:25
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+db/db_get.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+main.cpp:
+#  Implicit rule search has been done.
+#  Last modified 2022-06-18 21:29:32
+#  File has been updated.
+#  Successfully updated.
+
+# Not a target:
+db/db_drc.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+dp/dp_form.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+gp:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 111):
+	$(CXXPROC) -o $(BFILE) $(OBJS) $(LIB_OBJS) $(LIBS)
+	$(call copy_build)
+
+# Not a target:
+db/db_cell.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+ripple/ripple.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+ut/timer.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+db: db/db.o db/db_cell.o db/db_layer.o db/db_net.o db/db_pin.o db/db_region.o db/db_drc.o db/db_geom.o db/db_route.o db/db_get.o db/db_set.o db/db_add.o db/db_map.o db/db_check.o db/db_place.o
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 103):
+	$(CXXPROC) -o $(BFILE) $(OBJS) $(LIB_OBJS) $(LIBS)
+	$(call copy_build)
+
+# Not a target:
+db/db_layer.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+dp/dp_d 
+atalocal.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+sta/sta.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+db/db_set.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+sta/lib.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+placer: main.o db/db.o db/db_cell.o db/db_layer.o db/db_net.o db/db_pin.o db/db_region.o db/db_drc.o db/db_geom.o db/db_route.o db/db_get.o db/db_set.o db/db_add.o db/db_map.o db/db_check.o db/db_place.o dp/dp.o dp/dp_data.o dp/dp_datalocal.o dp/dp_dataglobal.o dp/dp_draw.o dp/dp_move.o dp/dp_movemll.o dp/dp_movesr.o dp/dp_form.o dp/dp_place.o io/file_bkshf_db.o io/utils.o io/io.o ripple/ripple.o sta/lib.o sta/sta.o ut/log.o ut/timer.o ut/utils.o vi/vi.o vi/draw.o vi/item_pos.o vi/vi_ 
+db.o
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# variable set hash-table stats:
+# Load=0/32=0%, Rehash=0, Collisions=0/14=0%
+#  recipe to execute (from 'Makefile', line 123):
+	$(CXXPROC) -o $(BFILE) $(OBJS) $(LIB_OBJS) $(LIBS)
+	$(call copy_build)
+
+# Not a target:
+vi/draw.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+io/io.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+db/db.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+db/db_net.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+dp/dp_move.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+clean:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 136):
+	rm -f */*.o *.o
+	rm -f */*.d *.d
+	rm -f io/*.tab.cpp io/*.tab.h io/*.yy.cpp io/*.output
+	rm -f *.dat $(BFILE) $(AFILE) core
+
+# Not a target:
+db/db_region.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+dp/dp_draw.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+db/db_pin.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+db/db_geom.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+dp/dp_data.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+io/file_bkshf_db.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+ripple.a: dp/dp.o dp/dp_data.o dp/dp_datalocal.o dp/dp_dataglobal.o dp/dp_draw.o dp/dp_move.o dp/dp_movemll.o dp/dp_movesr.o dp/dp_form.o dp/dp_place.o ut/log.o ut/timer.o ut/utils.o
+#  Implicit rule search has not been done.
+#  Modif 
+ication time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 127):
+	$(AR) $(AFILE) $(AR_OBJS) $(DP_OBJS) $(UT_OBJS)
+	cp $(AFILE) ../$(target)/$(AFILE)
+
+# Not a target:
+db/db_place.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+ut/log.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+main.o: main.cpp
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'main'
+#  File does not exist.
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# automatic
+# @ := main.o
+# automatic
+# % := 
+# automatic
+# * := main
+# automatic
+# + := main.cpp
+# automatic
+# | := 
+# automatic
+# < := main.cpp
+# automatic
+# ^ := main.cpp
+# automatic
+# ? := main.cpp
+# variable set hash-table stats:
+# Load=8/32=25%, Rehash=0, Collisions=5/24=21%
+#  recipe to execute (from 'Makefile', line 132):
+	$(CXXPROC) -o $*.o -c $*.cpp
+
+# Not a target:
+vi/item_pos.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+db/db_add.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+dp/dp_movesr.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+db/db_route.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+vi/vi_db.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+db/db_map.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+err:
+#  Implicit rule search has not been done.
+#  Implicit/static pattern stem: ''
+#  Last modified -4
+#  File has been updated.
+#  Successfully updated.
+# automatic
+# @ := err
+# automatic
+# % 
+ := 
+# automatic
+# * := 
+# automatic
+# + := 
+# automatic
+# | := 
+# automatic
+# < := 
+# automatic
+# ^ := 
+# automatic
+# ? := 
+# variable set hash-table stats:
+# Load=8/32=25%, Rehash=0, Collisions=1/9=11%
+#  recipe to execute (from 'Makefile', line 120):
+	$(BISON_ERROR)
+
+# Not a target:
+dp/dp_movemll.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+install: placer
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 99):
+	$(call copy_build)
+
+# files hash-table stats:
+# Load=55/1024=5%, Rehash=0, Collisions=16/177=9%
+# VPATH Search Paths
+
+# No 'vpath' search paths.
+
+# No general ('VPATH' variable) search path.
+
+# strcache buffers: 8 (7) / strings = 4198 / storage = 64064 B / avg = 15 B
+# current buf: size = 8174 B / used = 6886 B / count = 383 / avg = 17 B
+# other used: total = 55890 B / count = 3815 / avg = 14 B
+# other free: total = 40 B / max = 11 B / min = 2 B / avg = 5 B
+
+# strcache performance: lookups = 4531 / hit rate = 7%
+# hash-table stats:
+# Load=4198/8192=51%, Rehash=0, Collisions=1875/4531=41%
+# Finished Make data base on Tue Jun 28 14:33:53 2022
+
+ 

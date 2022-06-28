@@ -1,0 +1,46 @@
+make.exe --dry-run --always-make --keep-going --print-directory
+make.exe: Entering directory 'c:/Users/tstre/OneDrive/�ୱ/project/project/src'
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o main.o -c main.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db.o -c db/db.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_cell.o -c db/db_cell.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_layer.o -c db/db_layer.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_net.o -c db/db_net.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_pin.o -c db/db_pin.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_region.o -c db/db_region.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_drc.o -c db/db_drc.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_geom.o -c db/db_geom.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_route.o -c db/db_route.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_get.o -c db/db_get.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_set.o -c db/db_set.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_add.o -c db/db_add.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_map.o -c db/db_map.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_check.o -c db/db_check.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o db/db_place.o -c db/db_place.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o dp/dp.o -c dp/dp.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o dp/dp_data.o -c dp/dp_data.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o dp/dp_datalocal.o -c dp/dp_datalocal.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o dp/dp_dataglobal.o -c dp/dp_dataglobal.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o dp/dp_draw.o -c dp/dp_draw.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o dp/dp_move.o -c dp/dp_move.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o dp/dp_movemll.o -c dp/dp_movemll.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o dp/dp_movesr.o -c dp/dp_movesr.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o dp/dp_form.o -c dp/dp_form.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o dp/dp_place.o -c dp/dp_place.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o io/file_bkshf_db.o -c io/file_bkshf_db.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o io/utils.o -c io/utils.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o io/io.o -c io/io.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o ripple/ripple.o -c ripple/ripple.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o sta/lib.o -c sta/lib.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o sta/sta.o -c sta/sta.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o ut/log.o -c ut/log.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o ut/timer.o -c ut/timer.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o ut/utils.o -c ut/utils.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o vi/vi.o -c vi/vi.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o vi/draw.o -c vi/draw.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o vi/item_pos.o -c vi/item_pos.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o vi/vi_db.o -c vi/vi_db.cpp
+g++ -O3    -Wall -Werror -std=c++17 -I./lemon/include -I. -o placer main.o db/db.o db/db_cell.o db/db_layer.o db/db_net.o db/db_pin.o db/db_region.o db/db_drc.o db/db_geom.o db/db_route.o db/db_get.o db/db_set.o db/db_add.o db/db_map.o db/db_check.o db/db_place.o dp/dp.o dp/dp_data.o dp/dp_datalocal.o dp/dp_dataglobal.o dp/dp_draw.o dp/dp_move.o dp/dp_movemll.o dp/dp_movesr.o dp/dp_form.o dp/dp_place.o   io/file_bkshf_db.o  io/utils.o io/io.o ripple/ripple.o  sta/lib.o sta/sta.o  ut/log.o ut/timer.o ut/utils.o vi/vi.o vi/draw.o vi/item_pos.o vi/vi_db.o def58/lib/libdef.a lef58/lib/liblef.a ./lemon/lib/libemon.a -pthread -ldl  
+mkdir -p ../bin
+cp -u placer  ../bin/
+make.exe: Leaving directory 'c:/Users/tstre/OneDrive/�ୱ/project/project/src'
+ 

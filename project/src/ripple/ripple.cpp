@@ -68,8 +68,8 @@ int Ripple::_run(int argc, char **argv)
             dp::DPModule::MaxDisp = database.maxDisp * database.siteH / database.siteW;
             dp::DPModule::MaxDensity = database.maxDensity;
             dp_m->dplace();
-            io_m->save();
         }
+        io_m->save();
     }
 
     printlog(LOG_INFO, "-----------------------------------");

@@ -978,9 +978,6 @@ void DBModule::showOptions() const {
 }
 
 bool DBModule::setup(bool liteMode) {
-#ifndef NDEBUG
-    ripple::Shell::showOptions(_name);
-#endif
 
     database.setup(liteMode);
     return true;

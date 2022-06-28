@@ -700,6 +700,7 @@ public:
         queue<pair<int, int>> q_pair;
         vector<vector<int>> area_vec = {{0, -1}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}};
         vector<int> dir_vec = {1, 0, -1, 0, 1};
+        set<pair<int,int>> avoid_repeat;
         q_pair.push(make_pair(row, col));
         while (!q_pair.empty())
         {
@@ -717,16 +718,21 @@ public:
                 terminals_grid[row][col] = net_idx;
                 terminals_map[net_idx] = make_pair(row, col);
                 for (int i = 0; i < 8; i++)
-                    if (row + area_vec[i][0] >= 0 && row + area_vec[i][0] <= grid_row - 1 && col + area_vec[i][1] >= 0 && col + area_vec[i][1] <= grid_col - 1)
+                    if (row + area_vec[i][0] >= 0 && row + area_vec[i][0] <= grid_row - 1 && col + area_vec[i][1] >= 0 && col + area_vec[i][1] <= grid_col - 1){
                         terminals_grid[row + area_vec[i][0]][col + area_vec[i][1]] = net_idx;
+                    }
                 return true;
             }
             else
             {
                 terminals_grid[row][col] = net_idx;
                 for (int i = 0; i < 4; i++)
-                    if (row + dir_vec[i] >= 0 && row + dir_vec[i] <= grid_row - 1 && col + dir_vec[i + 1] >= 0 && col + dir_vec[i + 1] <= grid_col - 1 && terminals_grid[row + dir_vec[i]][col + dir_vec[i + 1]] != net_idx)
+                    if (row + dir_vec[i] >= 0 && row + dir_vec[i] <= grid_row - 1 && col + dir_vec[i + 1] >= 0 && col + dir_vec[i + 1] <= grid_col - 1 && terminals_grid[row + dir_vec[i]][col + dir_vec[i + 1]] != net_idx){
+                        if(avoid_repeat.find(make_pair(row + dir_vec[i],col + dir_vec[i + 1]))!=avoid_repeat.end())
+                            continue;
                         q_pair.push(make_pair(row + dir_vec[i], col + dir_vec[i + 1]));
+                        avoid_repeat.insert(make_pair(row + dir_vec[i],col + dir_vec[i + 1]));
+                    }
             }
         }
         return false;
@@ -856,10 +862,15 @@ public:
                 out2_file << (cell_inst_die[i] == &top ? 0 : 1) << endl;
             }
             out2_file.close();
-            out_file << top.cell_num << endl;
+            if(file=="top.txt")
+                out_file << top.cell_num << endl;
+            else if(file=="all.txt")
+                out_file<<cell_inst_num<<endl;
             for (int i = 0; i < cell_inst_num; i++)
             {
-                if (cell_inst_die[i] == &top)
+                if (cell_inst_die[i] == &top&&file=="top.txt")
+                    out_file << i << " " << cell_xy[cName[i]].first << " " << cell_xy[cName[i]].second << endl;
+                else if(file=="all.txt")
                     out_file << i << " " << cell_xy[cName[i]].first << " " << cell_xy[cName[i]].second << endl;
             }
             out_file.close();
@@ -890,6 +901,11 @@ public:
         }
         else
         {
+            if(file=="all.txt"){
+                f.read_net();
+                f.area_adjust();
+                f.ans();
+            }
             ifstream in_file(file);
             if (!in_file.good())
             {
@@ -1255,8 +1271,6 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     printlog(LOG_INFO, "reading iccad2022.");
     readICCAD2022(FILE); // this auxfile should be input txt
     // process top die first
-    if (io::IOModule::load_place)
-        return true;
     pid = fork();
     if (pid == -1)
     {
@@ -1270,6 +1284,8 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     {
         io::IOModule::ANS = true;
     }
+    if (io::IOModule::load_place)
+        return true;
     if (io::IOModule::TOP || !io::IOModule::ANS)
         bsData.load_Die(top);
     else
@@ -1669,7 +1685,7 @@ bool Database::readICCAD2022(const std::string &in_filename)
     }
     else
     {
-        global_inst.load_Place_result(io::IOModule::ANS, "top.txt");
+        global_inst.load_Place_result(true, "all.txt");
     }
 
     global_inst.f.output_to_global(global_inst);
@@ -1791,7 +1807,11 @@ bool Database::writeICCAD2022(const std::string &file)
     if (io::IOModule::ANS)
     {
         checkPlaceError();
-        global_inst.load_Place_result(io::IOModule::ANS, "top.txt");
+        if(io::IOModule::load_place==false)
+            global_inst.load_Place_result(io::IOModule::ANS, "top.txt");
+        else{
+            global_inst.load_Place_result(io::IOModule::ANS, "all.txt");
+        }
         printlog(LOG_INFO, "--------------Load the result of bottom die--------------");
         for (auto cell : database.cells)
         {
@@ -1804,12 +1824,14 @@ bool Database::writeICCAD2022(const std::string &file)
                 global_inst.cell_xy[cell->name()] = make_pair(cell->lx() / _scale, cell->ly() / _scale);
             }
         }
-        if (io::IOModule::load_place == false)
+        printlog(LOG_INFO, "loading is over");
             // global_inst.write_Place_result(TOP);
-            if (!global_inst.terminal_insert())
-            {
-                printlog(LOG_ERROR, "Terminal Inersion fails");
-            }
+        if (!global_inst.terminal_insert())
+        {
+            global_inst.write_Place_result(true, "all.txt");
+            cerr<<"Blank remained:"<<global_inst.terminal_grids_check();
+            printlog(LOG_ERROR, "Terminal Inersion fails");
+        }
         printlog(LOG_INFO, "Terminal Insersion is over");
         // Analyze for HPWL
         printlog(LOG_INFO, "Total HPWL for 2 dies: %lld", global_inst.getCost());
