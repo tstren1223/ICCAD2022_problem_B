@@ -5,7 +5,6 @@
 #include "io.h"
 #include "bits/stdc++.h"
 using namespace db;
-
 #include <sys/wait.h>
 #include <unistd.h>
 // ICCAD2022
@@ -554,45 +553,60 @@ public:
     long long getCost()
     {
         long long hpwl = 0;
-        for (int i = 0; i < net_num; i++)
+        for(auto &it : nets_map)
         {
-            int top_minX = INT_MAX, top_maxX = INT_MIN, top_minY = INT_MAX, top_maxY = INT_MIN;
-            int bot_minX = INT_MAX, bot_maxX = INT_MIN, bot_minY = INT_MAX, bot_maxY = INT_MIN;
-            int x, y;
-            for (int j = 0; j < net_pin_num[i]; j++)
+            int top_minX = INT_MAX,top_maxX = INT_MIN,top_minY = INT_MAX,top_maxY = INT_MIN;
+            int bot_minX = INT_MAX,bot_maxX = INT_MIN,bot_minY = INT_MAX,bot_maxY = INT_MIN;
+            int x,y;         
+            bool die;   
+            for(auto &it2 : it.second.pins)
             {
-                x = cell_xy[net_cell_name[i][j]].first;
-                y = cell_xy[net_cell_name[i][j]].second;
-                if (cell_to_die(net_cell_name[i][j]) == &bottom) // bot
+                if(instances_map[it2.first].die == false)
                 {
-                    bot_minX = min(x, bot_minX);
-                    bot_maxX = max(x, bot_maxX);
-                    bot_minY = min(y, bot_minY);
-                    bot_maxY = max(y, bot_maxY);
+                    die = false;
+                    x = instances_map[it2.first].x + instances_infros[it2.first].pins_map0[it2.second].x;
+                    y = instances_map[it2.first].y + instances_infros[it2.first].pins_map0[it2.second].y;
                 }
                 else
                 {
-                    top_minX = min(x, top_minX);
-                    top_maxX = max(x, top_maxX);
-                    top_minY = min(y, top_minY);
-                    top_maxY = max(y, top_maxY);
+                    die = true;
+                    x = instances_map[it2.first].x + instances_infros[it2.first].pins_map1[it2.second].x;
+                    y = instances_map[it2.first].y + instances_infros[it2.first].pins_map1[it2.second].y;
+                }            
+                if(instances_map[it2.first].die == true) // bot
+                {
+                    bot_minX = min(x,bot_minX);
+                    bot_maxX = max(x,bot_maxX);
+                    bot_minY = min(y,bot_minY);
+                    bot_maxY = max(y,bot_maxY);
                 }
+                else
+                {
+                    top_minX = min(x,top_minX);
+                    top_maxX = max(x,top_maxX);
+                    top_minY = min(y,top_minY);
+                    top_maxY = max(y,top_maxY);
+                }                                
             }
-            if (terminals_map.count(i))
+            if(terminals_map.count(it.first))
             {
-                x = terminals_map[i].second * top.Terminal_w + top.Terminal_w / 2 + top.Terminal_spacing;
-                y = terminals_map[i].first * top.Terminal_h + top.Terminal_h / 2 + top.Terminal_spacing;
-                bot_minX = min(x, bot_minX);
-                bot_maxX = max(x, bot_maxX);
-                bot_minY = min(y, bot_minY);
-                bot_maxY = max(y, bot_maxY);
-                top_minX = min(x, top_minX);
-                top_maxX = max(x, top_maxX);
-                top_minY = min(y, top_minY);
-                top_maxY = max(y, top_maxY);
-            }
-            hpwl += ((top_maxX - top_minX) + (top_maxY - top_minY) + (bot_maxX - bot_minX) + (bot_maxY - bot_minY));
-        }
+                x = terminals_map[it.first].second*terminal_infro.width + terminal_infro.width*0.5 + terminal_infro.spacing;
+                y = terminals_map[it.first].first*terminal_infro.height + terminal_infro.height*0.5 + terminal_infro.spacing;
+                bot_minX = min(x,bot_minX);
+                bot_maxX = max(x,bot_maxX);
+                bot_minY = min(y,bot_minY);
+                bot_maxY = max(y,bot_maxY);
+                top_minX = min(x,top_minX);
+                top_maxX = max(x,top_maxX);
+                top_minY = min(y,top_minY);
+                top_maxY = max(y,top_maxY);      
+                hpwl+= (top_maxY-top_minY) + (top_maxX-top_minX) + (bot_maxY-bot_minY) + (bot_maxX-bot_minX);
+            }       
+            else if(die==false)                         
+                hpwl+= (top_maxY-top_minY) + (top_maxX-top_minX);        
+            else
+                hpwl+= (bot_maxY-bot_minY) + (bot_maxX-bot_minX);
+        }            
         return hpwl;
     }
     int terminal_grids_check()
