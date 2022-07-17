@@ -34,6 +34,7 @@ public:
     static bool load_place;
     static bool TOP;
     static bool ANS;
+    static bool GP_check;
 public:
     const std::string& name() const { return _name; }
     static bool load();

@@ -59,7 +59,9 @@ int Ripple::_run(int argc, char **argv)
                      (double)database.getHPWL() / (double)database.siteW,
                      (double)database.siteW);
             #ifdef __GP__
+            io::IOModule::GP_check=true;
             gp_m->gplace();
+            io_m->save();
             #endif
             printlog(LOG_INFO,
                      "wirelength = %.2lf (scale=%.2lf)",

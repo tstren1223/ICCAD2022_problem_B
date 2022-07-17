@@ -5,9 +5,8 @@ make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --quest
 # License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
- 
 
-# Make data base, printed on Mon Jun 27 22:19:00 2022
+# Make data base, printed on Wed Jul 06 11:36:27 2022
 
 # Variables
 
@@ -32,8 +31,7 @@ HOMEDRIVE = C:
 # automatic
 ^D = $(patsubst %/,%,$(patsubst %\,%,$(dir $^)))
 # makefile
-CUR 
-DIR := c:/Users/tstre/OneDrive/�ୱ/project
+CURDIR := c:/Users/tstre/OneDrive/�ୱ/project
 # default
 SHELL := sh.exe
 # environment
@@ -48,8 +46,7 @@ ONEDRIVE = C:\Users\tstre\OneDrive
 PATHEXT = .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
 # makefile
 MAKEFILE_LIST := 
-# e 
-nvironment
+# environment
 FPS_BROWSER_USER_PROFILE_STRING = Default
 # environment
 TMP = C:\Users\tstre\AppData\Local\Temp
@@ -62,7 +59,7 @@ PROGRAMW6432 = C:\Program Files
 # environment
 PROGRAMDATA = C:\ProgramData
 # environment
-VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-874d4f96-4b7c-45c7-bfb4-faa09c813c93-sock
+VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-b6631f20-7d4f-472c-ade8-0f5ea23a3a60-sock
 # environment
 VSCODE_CWD = C:\Users\tstre\OneDrive\�ୱ\project
 # environment
@@ -96,7 +93,7 @@ QT = C:\QT\6.3.0\msvc2019_64\bin
 # automatic
 %F = $(notdir $%)
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_23276_GYIMSBDEIBOSMNMV
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_9880_CGVPUNZVIRSBZTMV
 # environment
 VSCODE_PIPE_LOGGING = true
 # environment
@@ -146,8 +143,7 @@ LOCALAPPDATA = C:\Users\tstre\AppData\Local
 # environment
 PSMODULEPATH = C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
 # default
-MAKE_COMMAND := mak 
-e.exe
+MAKE_COMMAND := make.exe
 # environment
 PROCESSOR_ARCHITEW6432 = AMD64
 # default
@@ -211,14 +207,13 @@ PROCESSOR_LEVEL = 6
 # environment
 FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
 # environment
-VSCODE_PID = 23276
+VSCODE_PID = 9880
 # environment
 USERDOMAIN_ROAMINGPROFILE = DESKTOP-R0LBQQO
 # variable set hash-table stats:
 # Load=100/1024=10%, Rehash=0, Collisions=11/116=9%
 
 # Pattern-specific Variable Values
- 
 
 # No pattern-specific variable values.
 
@@ -231,32 +226,29 @@ USERDOMAIN_ROAMINGPROFILE = DESKTOP-R0LBQQO
 # C:\Users\tstre\go\bin (key C:/Users/tstre/go/bin, mtime 1655737079): 3 files, no impossibilities.
 # . (key c:/Users/tstre/OneDrive/�ୱ/project, mtime 1655646890): 12 files, no impossibilities.
 # C:\Program Files\Git LFS (key C:/Program Files/Git LFS, mtime 1655548552): 5 files, no impossibilities.
-# C:\Program Files\MySQL\MySQL Shell 8.0\bin\ (key C:/Program Files/MySQL/MySQL Shell 8.0/bin/, mtime 1650897397): 9 files, no imp 
-ossibilities.
+# C:\Program Files\MySQL\MySQL Shell 8.0\bin\ (key C:/Program Files/MySQL/MySQL Shell 8.0/bin/, mtime 1650897397): 9 files, no impossibilities.
 # C:\Program Files\Git\cmd (key C:/Program Files/Git/cmd, mtime 1652253985): 8 files, no impossibilities.
 # C:\WINDOWS\System32\OpenSSH\: could not be stat'd.
 # C:\GnuWin32\bin (key C:/GnuWin32/bin, mtime 1651995944): 11 files, no impossibilities.
 # C:\MinGW\bin (key C:/MinGW/bin, mtime 1651994413): 282 files, no impossibilities.
-# C:\WINDOWS (key C:/WINDOWS, mtime 1650899148): 113 files, no impossibilities.
-# C:\Users\tstre\AppData\Local\Microsoft\WindowsApps (key C:/Users/tstre/AppData/Local/Microsoft/WindowsApps, mtime 1656027751): 15 files, no impossibilities.
+# C:\WINDOWS (key C:/WINDOWS, mtime 1650899148): 114 files, no impossibilities.
+# C:\Users\tstre\AppData\Local\Microsoft\WindowsApps (key C:/Users/tstre/AppData/Local/Microsoft/WindowsApps, mtime 1656652855): 15 files, no impossibilities.
 # C:\Program Files\LLVM\bin (key C:/Program Files/LLVM/bin, mtime 1651301763): 120 files, no impossibilities.
 # C:\GnuWin32\bin\flex.exe (key C:/GnuWin32/bin/flex.exe, mtime 1081375010): could not be opened.
 # C:\Users\tstre\AppData\Local\GitHubDesktop\bin (key C:/Users/tstre/AppData/Local/GitHubDesktop/bin, mtime 1655551382): 4 files, no impossibilities.
-# C:\Users\tstre\AppData\Local\Programs\Microsoft VS Code\bin (key C:/Users/tstre 
-/AppData/Local/Programs/Microsoft VS Code/bin, mtime 1655466750): 4 files, no impossibilities.
+# C:\Users\tstre\AppData\Local\Programs\Microsoft VS Code\bin (key C:/Users/tstre/AppData/Local/Programs/Microsoft VS Code/bin, mtime 1655466750): 4 files, no impossibilities.
 # C:\Program Files\Go\bin (key C:/Program Files/Go/bin, mtime 1651995117): 4 files, no impossibilities.
 # C:\WINDOWS\System32\Wbem (key C:/WINDOWS/System32/Wbem, mtime 1655487748): 171 files, no impossibilities.
 # C:\Program Files\Java\jdk-17.0.2\bin (key C:/Program Files/Java/jdk-17.0.2/bin, mtime 1650895329): 123 files, no impossibilities.
 # C:\Users\tstre\AppData\Local\Programs\Python\Python310\ (key C:/Users/tstre/AppData/Local/Programs/Python/Python310/, mtime 1652950131): 19 files, no impossibilities.
-# C:\Users\tstre\AppData\Local\Programs\Python\Python310\Scripts\ (key C:/Users/tstre/AppData/Local/Programs/Python/Python310/Scripts/, mtime 1656130332): 17 files, no impossibilities.
+# C:\Users\tstre\AppData\Local\Programs\Python\Python310\Scripts\ (key C:/Users/tstre/AppData/Local/Programs/Python/Python310/Scripts/, mtime 1656582043): 17 files, no impossibilities.
 # C:\GnuWin32\bin\bison.exe (key C:/GnuWin32/bin/bison.exe, mtime 1241468228): could not be opened.
 # C:\Program Files\dotnet\ (key C:/Program Files/dotnet/, mtime 1655737296): 13 files, no impossibilities.
-# C:\Program Files\Eclip 
-se Adoptium\jdk-17.0.3.7-hotspot\bin (key C:/Program Files/Eclipse Adoptium/jdk-17.0.3.7-hotspot/bin, mtime 1655739101): 122 files, no impossibilities.
-# C:\WINDOWS\system32 (key C:/WINDOWS/system32, mtime 1655742393): 2889 files, no impossibilities.
+# C:\Program Files\Eclipse Adoptium\jdk-17.0.3.7-hotspot\bin (key C:/Program Files/Eclipse Adoptium/jdk-17.0.3.7-hotspot/bin, mtime 1655739101): 122 files, no impossibilities.
+# C:\WINDOWS\system32 (key C:/WINDOWS/system32, mtime 1656948963): 2889 files, no impossibilities.
 # C:\Users\tstre\.dotnet\tools: could not be stat'd.
 
-# 4351 files, no impossibilities in 28 directories.
+# 4352 files, no impossibilities in 28 directories.
 
 # Implicit Rules
 
@@ -312,16 +304,15 @@ GNUmakefile:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 8 (7) / strings = 4141 / storage = 63504 B / avg = 15 B
-# current buf: size = 8174 B / used = 6351 B / 
- count = 336 / avg = 18 B
-# other used: total = 55330 B / count = 3805 / avg = 14 B
-# other free: total = 65 B / max = 15 B / min = 3 B / avg = 9 B
+# strcache buffers: 8 (7) / strings = 4142 / storage = 63517 B / avg = 15 B
+# current buf: size = 8174 B / used = 6351 B / count = 336 / avg = 18 B
+# other used: total = 55343 B / count = 3806 / avg = 14 B
+# other free: total = 52 B / max = 12 B / min = 2 B / avg = 7 B
 
-# strcache performance: lookups = 4387 / hit rate = 5%
+# strcache performance: lookups = 4388 / hit rate = 5%
 # hash-table stats:
-# Load=4141/8192=51%, Rehash=0, Collisions=1785/4387=41%
-# Finished Make data base on Mon Jun 27 22:19:00 2022
+# Load=4142/8192=51%, Rehash=0, Collisions=1785/4388=41%
+# Finished Make data base on Wed Jul 06 11:36:27 2022
 
  
 make.exe: *** No rule to make target 'all'.  Stop.

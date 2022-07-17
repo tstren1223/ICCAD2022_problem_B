@@ -553,60 +553,59 @@ public:
     long long getCost()
     {
         long long hpwl = 0;
-        for(auto &it : nets_map)
+        for (int i = 0; i < net_num; i++)
         {
-            int top_minX = INT_MAX,top_maxX = INT_MIN,top_minY = INT_MAX,top_maxY = INT_MIN;
-            int bot_minX = INT_MAX,bot_maxX = INT_MIN,bot_minY = INT_MAX,bot_maxY = INT_MIN;
-            int x,y;         
-            bool die;   
-            for(auto &it2 : it.second.pins)
+            int top_minX = INT_MAX, top_maxX = INT_MIN, top_minY = INT_MAX, top_maxY = INT_MIN;
+            int bot_minX = INT_MAX, bot_maxX = INT_MIN, bot_minY = INT_MAX, bot_maxY = INT_MIN;
+            int x, y;
+            bool die = true;
+            for (int j = 0; j < net_pin_num[i]; j++)
             {
-                if(instances_map[it2.first].die == false)
+                if (pin_to_die(i, j) == &top)
                 {
                     die = false;
-                    x = instances_map[it2.first].x + instances_infros[it2.first].pins_map0[it2.second].x;
-                    y = instances_map[it2.first].y + instances_infros[it2.first].pins_map0[it2.second].y;
                 }
                 else
                 {
                     die = true;
-                    x = instances_map[it2.first].x + instances_infros[it2.first].pins_map1[it2.second].x;
-                    y = instances_map[it2.first].y + instances_infros[it2.first].pins_map1[it2.second].y;
-                }            
-                if(instances_map[it2.first].die == true) // bot
+                }
+                pair<int, int> pin_xy = pin_result(i, j);
+                x = pin_xy.first;
+                y = pin_xy.second;
+                if (pin_to_die(i, j) == &bottom) // bot
                 {
-                    bot_minX = min(x,bot_minX);
-                    bot_maxX = max(x,bot_maxX);
-                    bot_minY = min(y,bot_minY);
-                    bot_maxY = max(y,bot_maxY);
+                    bot_minX = min(x, bot_minX);
+                    bot_maxX = max(x, bot_maxX);
+                    bot_minY = min(y, bot_minY);
+                    bot_maxY = max(y, bot_maxY);
                 }
                 else
                 {
-                    top_minX = min(x,top_minX);
-                    top_maxX = max(x,top_maxX);
-                    top_minY = min(y,top_minY);
-                    top_maxY = max(y,top_maxY);
-                }                                
+                    top_minX = min(x, top_minX);
+                    top_maxX = max(x, top_maxX);
+                    top_minY = min(y, top_minY);
+                    top_maxY = max(y, top_maxY);
+                }
             }
-            if(terminals_map.count(it.first))
+            if (terminals_map.count(i))
             {
-                x = terminals_map[it.first].second*terminal_infro.width + terminal_infro.width*0.5 + terminal_infro.spacing;
-                y = terminals_map[it.first].first*terminal_infro.height + terminal_infro.height*0.5 + terminal_infro.spacing;
-                bot_minX = min(x,bot_minX);
-                bot_maxX = max(x,bot_maxX);
-                bot_minY = min(y,bot_minY);
-                bot_maxY = max(y,bot_maxY);
-                top_minX = min(x,top_minX);
-                top_maxX = max(x,top_maxX);
-                top_minY = min(y,top_minY);
-                top_maxY = max(y,top_maxY);      
-                hpwl+= (top_maxY-top_minY) + (top_maxX-top_minX) + (bot_maxY-bot_minY) + (bot_maxX-bot_minX);
-            }       
-            else if(die==false)                         
-                hpwl+= (top_maxY-top_minY) + (top_maxX-top_minX);        
+                x = terminals_map[i].second * top.Terminal_w + top.Terminal_w * 0.5 + top.Terminal_spacing;
+                y = terminals_map[i].first * top.Terminal_h + top.Terminal_h * 0.5 + top.Terminal_spacing;
+                bot_minX = min(x, bot_minX);
+                bot_maxX = max(x, bot_maxX);
+                bot_minY = min(y, bot_minY);
+                bot_maxY = max(y, bot_maxY);
+                top_minX = min(x, top_minX);
+                top_maxX = max(x, top_maxX);
+                top_minY = min(y, top_minY);
+                top_maxY = max(y, top_maxY);
+                hpwl += (top_maxY - top_minY) + (top_maxX - top_minX) + (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
+            }
+            else if (die == false)
+                hpwl += (top_maxY - top_minY) + (top_maxX - top_minX);
             else
-                hpwl+= (bot_maxY-bot_minY) + (bot_maxX-bot_minX);
-        }            
+                hpwl += (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
+        }
         return hpwl;
     }
     int terminal_grids_check()
@@ -714,7 +713,7 @@ public:
         queue<pair<int, int>> q_pair;
         vector<vector<int>> area_vec = {{0, -1}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}};
         vector<int> dir_vec = {1, 0, -1, 0, 1};
-        set<pair<int,int>> avoid_repeat;
+        set<pair<int, int>> avoid_repeat;
         q_pair.push(make_pair(row, col));
         while (!q_pair.empty())
         {
@@ -732,7 +731,8 @@ public:
                 terminals_grid[row][col] = net_idx;
                 terminals_map[net_idx] = make_pair(row, col);
                 for (int i = 0; i < 8; i++)
-                    if (row + area_vec[i][0] >= 0 && row + area_vec[i][0] <= grid_row - 1 && col + area_vec[i][1] >= 0 && col + area_vec[i][1] <= grid_col - 1){
+                    if (row + area_vec[i][0] >= 0 && row + area_vec[i][0] <= grid_row - 1 && col + area_vec[i][1] >= 0 && col + area_vec[i][1] <= grid_col - 1)
+                    {
                         terminals_grid[row + area_vec[i][0]][col + area_vec[i][1]] = net_idx;
                     }
                 return true;
@@ -741,11 +741,12 @@ public:
             {
                 terminals_grid[row][col] = net_idx;
                 for (int i = 0; i < 4; i++)
-                    if (row + dir_vec[i] >= 0 && row + dir_vec[i] <= grid_row - 1 && col + dir_vec[i + 1] >= 0 && col + dir_vec[i + 1] <= grid_col - 1 && terminals_grid[row + dir_vec[i]][col + dir_vec[i + 1]] != net_idx){
-                        if(avoid_repeat.find(make_pair(row + dir_vec[i],col + dir_vec[i + 1]))!=avoid_repeat.end())
+                    if (row + dir_vec[i] >= 0 && row + dir_vec[i] <= grid_row - 1 && col + dir_vec[i + 1] >= 0 && col + dir_vec[i + 1] <= grid_col - 1 && terminals_grid[row + dir_vec[i]][col + dir_vec[i + 1]] != net_idx)
+                    {
+                        if (avoid_repeat.find(make_pair(row + dir_vec[i], col + dir_vec[i + 1])) != avoid_repeat.end())
                             continue;
                         q_pair.push(make_pair(row + dir_vec[i], col + dir_vec[i + 1]));
-                        avoid_repeat.insert(make_pair(row + dir_vec[i],col + dir_vec[i + 1]));
+                        avoid_repeat.insert(make_pair(row + dir_vec[i], col + dir_vec[i + 1]));
                     }
             }
         }
@@ -830,6 +831,21 @@ public:
         out_file.close();
         return true;
     }
+    bool write_GP_result(string file = "")
+    {
+        ofstream out_file(file);
+        if (!out_file.good())
+        {
+            printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
+            return false;
+        }
+        for (auto cell : database.cells)
+        {
+            out_file << cell->name() << " " << cell->lx() / _scale << " " << cell->ly() / _scale << endl;
+        }
+        out_file.close();
+        return true;
+    }
     bool write_Place_result(bool TOP, string file = "")
     {
         if (TOP == false)
@@ -876,15 +892,15 @@ public:
                 out2_file << (cell_inst_die[i] == &top ? 0 : 1) << endl;
             }
             out2_file.close();
-            if(file=="top.txt")
+            if (file == "top.txt")
                 out_file << top.cell_num << endl;
-            else if(file=="all.txt")
-                out_file<<cell_inst_num<<endl;
+            else if (file == "all.txt")
+                out_file << cell_inst_num << endl;
             for (int i = 0; i < cell_inst_num; i++)
             {
-                if (cell_inst_die[i] == &top&&file=="top.txt")
+                if (cell_inst_die[i] == &top && file == "top.txt")
                     out_file << i << " " << cell_xy[cName[i]].first << " " << cell_xy[cName[i]].second << endl;
-                else if(file=="all.txt")
+                else if (file == "all.txt")
                     out_file << i << " " << cell_xy[cName[i]].first << " " << cell_xy[cName[i]].second << endl;
             }
             out_file.close();
@@ -915,7 +931,8 @@ public:
         }
         else
         {
-            if(file=="all.txt"){
+            if (file == "all.txt")
+            {
                 f.read_net();
                 f.area_adjust();
                 f.ans();
@@ -1796,8 +1813,22 @@ bool Database::writeICCAD2022(const std::string &file)
 {
     if (pid > 0)
     {
-        waitpid(pid, NULL, WUNTRACED);
-        cout << "wait ending" << endl;
+        if (io::IOModule::GP_check)
+        {
+            io::IOModule::GP_check=false;
+            global_inst.write_GP_result("gp_top.txt");
+            return true;
+        }
+        else
+        {
+            waitpid(pid, NULL, WUNTRACED);
+            cout << "wait ending" << endl;
+        }
+    }
+    else if(io::IOModule::GP_check){
+        io::IOModule::GP_check=false;
+        global_inst.write_GP_result("gp_bottom.txt");
+        return true;
     }
     if (io::IOModule::TOP)
     {
@@ -1821,9 +1852,10 @@ bool Database::writeICCAD2022(const std::string &file)
     if (io::IOModule::ANS)
     {
         checkPlaceError();
-        if(io::IOModule::load_place==false)
+        if (io::IOModule::load_place == false)
             global_inst.load_Place_result(io::IOModule::ANS, "top.txt");
-        else{
+        else
+        {
             global_inst.load_Place_result(io::IOModule::ANS, "all.txt");
         }
         printlog(LOG_INFO, "--------------Load the result of bottom die--------------");
@@ -1839,11 +1871,11 @@ bool Database::writeICCAD2022(const std::string &file)
             }
         }
         printlog(LOG_INFO, "loading is over");
-            // global_inst.write_Place_result(TOP);
+        // global_inst.write_Place_result(TOP);
         if (!global_inst.terminal_insert())
         {
             global_inst.write_Place_result(true, "all.txt");
-            cerr<<"Blank remained:"<<global_inst.terminal_grids_check();
+            cerr << "Blank remained:" << global_inst.terminal_grids_check();
             printlog(LOG_ERROR, "Terminal Inersion fails");
         }
         printlog(LOG_INFO, "Terminal Insersion is over");

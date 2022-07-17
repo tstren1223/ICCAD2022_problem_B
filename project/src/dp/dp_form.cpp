@@ -30,7 +30,6 @@ unsigned DPlacer::minCostFlow() {
     Graph::Node nn;
     Graph::Node np;
     supply[nz] = 0;
-
     if (!DPModule::MLLTotalDisp) {
         nn = g.addNode();
         np = g.addNode();

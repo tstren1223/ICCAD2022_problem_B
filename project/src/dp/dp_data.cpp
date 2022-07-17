@@ -296,7 +296,6 @@ void DPlacer::input() {
     coreHY = (dbHY - dbLY) / siteH;
 
     nRegions = database.getNumRegions();
-
     binW = siteH / siteW * 9;
     binH = 9;
     

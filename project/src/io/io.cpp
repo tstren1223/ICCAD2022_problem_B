@@ -13,6 +13,7 @@ std::string IOModule::BookshelfVariety = "ICCAD2022";
 std::string IOModule::BookshelfPlacement = "";
 // ICCAD2022
 bool IOModule::load_place=false;
+bool IOModule::GP_check=false;
 bool IOModule::TOP=false;
 bool IOModule::ANS=false;
 
