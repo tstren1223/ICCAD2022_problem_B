@@ -60,7 +60,7 @@ bool io::IOModule::load()
     if (BookshelfAux.length() > 0 && BookshelfPl.length())
     {
         Format = "bookshelf";
-        database.readICCAD2022_setup(BookshelfAux,true);
+        database.readICCAD2022_setup(BookshelfAux);
     }
     return true;
 }

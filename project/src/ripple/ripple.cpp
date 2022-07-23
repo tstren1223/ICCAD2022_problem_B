@@ -52,6 +52,12 @@ int Ripple::_run(int argc, char **argv)
         io_m->load();
         if (io::IOModule::load_place == false)
         {
+            database.setup();
+            database.errorCheck();
+            printlog(LOG_INFO,
+                     "wirelength = %.2lf (scale=%.2lf)",
+                     (double)database.getHPWL() / (double)database.siteW,
+                     (double)database.siteW);
             #ifdef __GP__
             io::IOModule::GP_check=true;
             gp_m->gplace();
