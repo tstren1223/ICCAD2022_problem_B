@@ -102,7 +102,6 @@ ProcessStatus::RunStatus Ripple::getStatus()
 
 int Ripple::getArgs(int argc, char **argv)
 {
-    io::IOModule::DefPlacement = "placed.def";
     io::IOModule::BookshelfPlacement = "placed.pl";
     db::DBModule::EdgeSpacing = true;
     // setting.user_target_density=-1.0;
@@ -125,17 +124,10 @@ int Ripple::getArgs(int argc, char **argv)
                 return 1;
             }
         }
-        else if (!strcmp(argv[a], "-output_def"))
-        {
-            ++a;
-            io::IOModule::BookshelfPlacement.assign(argv[a]);
-            io::IOModule::DefPlacement.assign(argv[a]);
-        }
         else if (strcmp(argv[a], "-output") == 0)
         {
             ++a;
             io::IOModule::BookshelfPlacement.assign(argv[a]);
-            io::IOModule::DefPlacement.assign(argv[a]);
         }
         else if (strcmp(argv[a], "-aux") == 0)
         {
@@ -145,45 +137,9 @@ int Ripple::getArgs(int argc, char **argv)
         {
             io::IOModule::BookshelfPl.assign(argv[++a]);
         }
-        else if (strcmp(argv[a], "-cell_lef") == 0)
-        {
-            io::IOModule::LefCell.assign(argv[++a]);
-        }
-        else if (strcmp(argv[a], "-tech_lef") == 0)
-        {
-            io::IOModule::LefTech.assign(argv[++a]);
-        }
-        else if (!strcmp(argv[a], "-input_def"))
-        {
-            io::IOModule::DefCell.assign(argv[++a]);
-        }
-        else if (!strcmp(argv[a], "-placed"))
-        {
-            io::IOModule::DefCell.assign(argv[++a]);
-        }
-        else if (strcmp(argv[a], "-floorplan_def") == 0)
-        {
-            io::IOModule::DefFloorplan.assign(argv[++a]);
-        }
-        else if (!strcmp(argv[a], "-verilog"))
-        {
-            io::IOModule::Verilog.assign(argv[++a]);
-        }
-        else if (!strcmp(argv[a], "-liberty"))
-        {
-            io::IOModule::Liberty.assign(argv[++a]);
-        }
-        else if (strcmp(argv[a], "-placement_constraints") == 0)
-        {
-            io::IOModule::Constraints.assign(argv[++a]);
-        }
         else if (strcmp(argv[a], "-targetdensity") == 0)
         {
             ++a;
-        }
-        else if (!strcmp(argv[a], "-size"))
-        {
-            io::IOModule::Size.assign(argv[++a]);
         }
 #ifdef __GP__
         else if (!strcmp(argv[a], "-gp_num_init_iter"))
@@ -259,6 +215,10 @@ int Ripple::getArgs(int argc, char **argv)
         else if (strcmp(argv[a], "-ans") == 0)
         {
             io::IOModule::ANS = true;
+        }
+        else if (strcmp(argv[a], "-statics") == 0)
+        {
+            io::IOModule::statics = true;
         }
         else if (argv[a][0] == '-')
         {

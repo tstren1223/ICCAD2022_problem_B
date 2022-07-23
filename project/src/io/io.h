@@ -21,22 +21,13 @@ public:
     static std::string BookshelfPl;
     static std::string BookshelfVariety;
     static std::string BookshelfPlacement;
-    static std::string LefTech;
-    static std::string LefCell;
-    static std::string DefFloorplan;
-    static std::string DefCell;
-    static std::string DefPlacement;
-
-    static std::string Verilog;
-    static std::string Liberty;
-    static std::string Size;
-    static std::string Constraints;
     
     //ICCAD2022
     static bool load_place;
     static bool TOP;
     static bool ANS;
     static bool GP_check;
+    static bool statics;
 public:
     const std::string& name() const { return _name; }
     static bool load();

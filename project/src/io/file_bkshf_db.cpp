@@ -1930,7 +1930,18 @@ bool Database::writeICCAD2022(const std::string &file)
         }
         printlog(LOG_INFO, "Terminal Insersion is over");
         // Analyze for HPWL
-        printlog(LOG_INFO, "Total HPWL for 2 dies: %lld", global_inst.getCost());
+        long long r;
+        printlog(LOG_INFO, "Total HPWL for 2 dies: %lld", r=global_inst.getCost());
+        if(io::IOModule::statics){
+            ofstream out_file("statics.txt",std::ios_base::app|std::ios_base::out);
+            if (!out_file.good())
+            {
+                printlog(LOG_ERROR, "cannot open file: %s", "statics.txt");
+            }else{
+                out_file<<r<<endl;
+            }
+            out_file.close();
+        }
         // output
         global_inst.layout_info();
         if (!global_inst.writeICCAD2022(file))
