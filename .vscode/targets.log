@@ -6,7 +6,7 @@ make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --quest
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Wed Jul 06 11:36:27 2022
+# Make data base, printed on Mon Jul 18 22:06:02 2022
 
 # Variables
 
@@ -18,8 +18,6 @@ make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --quest
 .SHELLFLAGS := -c
 # makefile
 MAKEFLAGS = Rrqp
-# environment
-VSCODE_LOG_NATIVE = false
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -37,7 +35,7 @@ SHELL := sh.exe
 # environment
 WINDIR = C:\WINDOWS
 # environment
-VSCODE_NLS_CONFIG = {"locale":"zh-tw","availableLanguages":{"*":"zh-tw"},"_languagePackId":"ac66bbc6dbbb1314a06c6472917732ef.zh-tw","_translationsConfigFile":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\ac66bbc6dbbb1314a06c6472917732ef.zh-tw\\tcf.json","_cacheRoot":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\ac66bbc6dbbb1314a06c6472917732ef.zh-tw","_resolvedLanguagePackCoreLocation":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\ac66bbc6dbbb1314a06c6472917732ef.zh-tw\\30d9c6cd9483b2cc586687151bcbcd635f373630","_corruptedFile":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\ac66bbc6dbbb1314a06c6472917732ef.zh-tw\\corrupted.info","_languagePackSupport":true}
+VSCODE_NLS_CONFIG = {"locale":"zh-tw","availableLanguages":{"*":"zh-tw"},"_languagePackId":"a0b772d00248b7f5c117cab9736199be.zh-tw","_translationsConfigFile":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\a0b772d00248b7f5c117cab9736199be.zh-tw\\tcf.json","_cacheRoot":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\a0b772d00248b7f5c117cab9736199be.zh-tw","_resolvedLanguagePackCoreLocation":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\a0b772d00248b7f5c117cab9736199be.zh-tw\\b06ae3b2d2dbfe28bca3134cc6be65935cdfea6a","_corruptedFile":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\a0b772d00248b7f5c117cab9736199be.zh-tw\\corrupted.info","_languagePackSupport":true}
 # environment
 VBOX_MSI_INSTALL_PATH = C:\Program Files\Oracle\VirtualBox\
 # environment
@@ -51,15 +49,11 @@ FPS_BROWSER_USER_PROFILE_STRING = Default
 # environment
 TMP = C:\Users\tstre\AppData\Local\Temp
 # environment
-VSCODE_VERBOSE_LOGGING = true
-# environment
 PATH_TO_FX = C:\Program Files\Java\javafx-sdk-17.0.2\lib
 # environment
 PROGRAMW6432 = C:\Program Files
 # environment
 PROGRAMDATA = C:\ProgramData
-# environment
-VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-b6631f20-7d4f-472c-ade8-0f5ea23a3a60-sock
 # environment
 VSCODE_CWD = C:\Users\tstre\OneDrive\�ୱ\project
 # environment
@@ -81,8 +75,6 @@ GOPATH = C:\Users\tstre\go
 # environment
 SOPC_KIT_NIOS2 = D:\Quartus2\nios2eds
 # environment
-VSCODE_LOG_STACK = false
-# environment
 NUMBER_OF_PROCESSORS = 8
 # environment
 ELECTRON_RUN_AS_NODE = 1
@@ -93,9 +85,7 @@ QT = C:\QT\6.3.0\msvc2019_64\bin
 # automatic
 %F = $(notdir $%)
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_9880_CGVPUNZVIRSBZTMV
-# environment
-VSCODE_PIPE_LOGGING = true
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_5200_AWVUTSIWCULSFSEK
 # environment
 COMPUTERNAME = DESKTOP-R0LBQQO
 # environment
@@ -111,7 +101,7 @@ PUBLIC = C:\Users\Public
 # environment
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
-VSCODE_CODE_CACHE_PATH = C:\Users\tstre\AppData\Roaming\Code\CachedData\30d9c6cd9483b2cc586687151bcbcd635f373630
+VSCODE_CODE_CACHE_PATH = C:\Users\tstre\AppData\Roaming\Code\CachedData\b06ae3b2d2dbfe28bca3134cc6be65935cdfea6a
 # environment
 APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
 # environment
@@ -155,7 +145,7 @@ PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 142 Stepping 10, GenuineIntel
 # environment
 OS = Windows_NT
 # environment
-VSCODE_IPC_HOOK = \\.\pipe\01317d538d75217dee263d604633d4c3-1.68.1-main-sock
+VSCODE_IPC_HOOK = \\.\pipe\01317d538d75217dee263d604633d4c3-1.69.1-main-sock
 # environment
 HOMEPATH = \Users\tstre
 # environment
@@ -207,11 +197,11 @@ PROCESSOR_LEVEL = 6
 # environment
 FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
 # environment
-VSCODE_PID = 9880
+VSCODE_PID = 5200
 # environment
 USERDOMAIN_ROAMINGPROFILE = DESKTOP-R0LBQQO
 # variable set hash-table stats:
-# Load=100/1024=10%, Rehash=0, Collisions=11/116=9%
+# Load=95/1024=9%, Rehash=0, Collisions=11/111=10%
 
 # Pattern-specific Variable Values
 
@@ -232,23 +222,23 @@ USERDOMAIN_ROAMINGPROFILE = DESKTOP-R0LBQQO
 # C:\GnuWin32\bin (key C:/GnuWin32/bin, mtime 1651995944): 11 files, no impossibilities.
 # C:\MinGW\bin (key C:/MinGW/bin, mtime 1651994413): 282 files, no impossibilities.
 # C:\WINDOWS (key C:/WINDOWS, mtime 1650899148): 114 files, no impossibilities.
-# C:\Users\tstre\AppData\Local\Microsoft\WindowsApps (key C:/Users/tstre/AppData/Local/Microsoft/WindowsApps, mtime 1656652855): 15 files, no impossibilities.
+# C:\Users\tstre\AppData\Local\Microsoft\WindowsApps (key C:/Users/tstre/AppData/Local/Microsoft/WindowsApps, mtime 1657706353): 15 files, no impossibilities.
 # C:\Program Files\LLVM\bin (key C:/Program Files/LLVM/bin, mtime 1651301763): 120 files, no impossibilities.
 # C:\GnuWin32\bin\flex.exe (key C:/GnuWin32/bin/flex.exe, mtime 1081375010): could not be opened.
 # C:\Users\tstre\AppData\Local\GitHubDesktop\bin (key C:/Users/tstre/AppData/Local/GitHubDesktop/bin, mtime 1655551382): 4 files, no impossibilities.
-# C:\Users\tstre\AppData\Local\Programs\Microsoft VS Code\bin (key C:/Users/tstre/AppData/Local/Programs/Microsoft VS Code/bin, mtime 1655466750): 4 files, no impossibilities.
+# C:\Users\tstre\AppData\Local\Programs\Microsoft VS Code\bin (key C:/Users/tstre/AppData/Local/Programs/Microsoft VS Code/bin, mtime 1657761421): 4 files, no impossibilities.
 # C:\Program Files\Go\bin (key C:/Program Files/Go/bin, mtime 1651995117): 4 files, no impossibilities.
-# C:\WINDOWS\System32\Wbem (key C:/WINDOWS/System32/Wbem, mtime 1655487748): 171 files, no impossibilities.
+# C:\WINDOWS\System32\Wbem (key C:/WINDOWS/System32/Wbem, mtime 1657904626): 170 files, no impossibilities.
 # C:\Program Files\Java\jdk-17.0.2\bin (key C:/Program Files/Java/jdk-17.0.2/bin, mtime 1650895329): 123 files, no impossibilities.
 # C:\Users\tstre\AppData\Local\Programs\Python\Python310\ (key C:/Users/tstre/AppData/Local/Programs/Python/Python310/, mtime 1652950131): 19 files, no impossibilities.
 # C:\Users\tstre\AppData\Local\Programs\Python\Python310\Scripts\ (key C:/Users/tstre/AppData/Local/Programs/Python/Python310/Scripts/, mtime 1656582043): 17 files, no impossibilities.
 # C:\GnuWin32\bin\bison.exe (key C:/GnuWin32/bin/bison.exe, mtime 1241468228): could not be opened.
 # C:\Program Files\dotnet\ (key C:/Program Files/dotnet/, mtime 1655737296): 13 files, no impossibilities.
 # C:\Program Files\Eclipse Adoptium\jdk-17.0.3.7-hotspot\bin (key C:/Program Files/Eclipse Adoptium/jdk-17.0.3.7-hotspot/bin, mtime 1655739101): 122 files, no impossibilities.
-# C:\WINDOWS\system32 (key C:/WINDOWS/system32, mtime 1656948963): 2889 files, no impossibilities.
+# C:\WINDOWS\system32 (key C:/WINDOWS/system32, mtime 1657933524): 2893 files, no impossibilities.
 # C:\Users\tstre\.dotnet\tools: could not be stat'd.
 
-# 4352 files, no impossibilities in 28 directories.
+# 4355 files, no impossibilities in 28 directories.
 
 # Implicit Rules
 
@@ -304,15 +294,15 @@ GNUmakefile:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 8 (7) / strings = 4142 / storage = 63517 B / avg = 15 B
-# current buf: size = 8174 B / used = 6351 B / count = 336 / avg = 18 B
-# other used: total = 55343 B / count = 3806 / avg = 14 B
-# other free: total = 52 B / max = 12 B / min = 2 B / avg = 7 B
+# strcache buffers: 8 (7) / strings = 4145 / storage = 63581 B / avg = 15 B
+# current buf: size = 8174 B / used = 6408 B / count = 341 / avg = 18 B
+# other used: total = 55407 B / count = 3804 / avg = 14 B
+# other free: total = 45 B / max = 11 B / min = 3 B / avg = 6 B
 
-# strcache performance: lookups = 4388 / hit rate = 5%
+# strcache performance: lookups = 4391 / hit rate = 5%
 # hash-table stats:
-# Load=4142/8192=51%, Rehash=0, Collisions=1785/4388=41%
-# Finished Make data base on Wed Jul 06 11:36:27 2022
+# Load=4145/8192=51%, Rehash=0, Collisions=1792/4391=41%
+# Finished Make data base on Mon Jul 18 22:06:02 2022
 
  
 make.exe: *** No rule to make target 'all'.  Stop.

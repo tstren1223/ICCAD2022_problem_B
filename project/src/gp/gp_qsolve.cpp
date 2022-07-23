@@ -10,6 +10,10 @@ using namespace gp;
 
 double MinCellDist=0.01; //to avoid zero distance between two cells
 
+int t_numNets;
+int t_numCells;
+vector<vector<int>> t_netCell;
+int t_numPins;
 long Cxsize;
 long Cysize;
 vector<SparseMatrix> Cx;
@@ -26,7 +30,6 @@ vector<double> lastVarX;
 vector<double> lastVarY;
 vector<double> varX;
 vector<double> varY;
-
 int numMovables = 0;
 int numConnects = 0;
 
@@ -44,46 +47,14 @@ void initLowerBound(){
     netModel = NetModelNone;
 }
 
-void initCG(NetModel model){
-    if(model == netModel){
-        return;
-    }
-
-    int nConnects = 0;
-    int nMovables = 0;
-    if(model == NetModelClique){
-        if(numPins > 50000){
-            printlog(LOG_WARN, "too many pins for clique model!");
-        }
-        for(int i=0; i<numNets; i++){
-            int nPins = netCell[i].size();
-            if(nPins>1){
-                nConnects += nPins * (nPins-1) / 2;
-            }
-        }
-        nMovables = numCells;
-    }else if(model == NetModelStar){
-        nConnects = numPins;
-        nMovables = numCells + numNets;
-    }else if(model == NetModelB2B){
-        nConnects = 2 * numPins + numCells;
-        nMovables = numCells;
-    }else if(model == NetModelHybrid){
-        nConnects = numPins;
-        nMovables = numCells + numNets;
-    }else if(model == NetModelMST){
-        nConnects = numPins;
-        nMovables = numCells;
-    }else{
-        nConnects = 0;
-        nMovables = 0;
-        printlog(LOG_ERROR, "invalid net model");
-    }
-
+void initCG(NetModel model,vector<double> &cellX,vector<double> &cellY){
+   
+    int nConnects = 2 * t_numPins + t_numCells;
+    int nMovables = t_numCells;    
+    
     numMovables = nMovables;
     numConnects = nConnects;
     netModel = model;
-
     varX.resize(numMovables, 0.0);
     varY.resize(numMovables, 0.0);
     lastVarX = cellX;
@@ -240,9 +211,9 @@ void B2BaddInC_b(
 
 
 void B2BModel(){
-    for(int net=0; net<numNets; net++){
+    for(int net=0; net<t_numNets; net++){
         //find the net bounding box and the bounding cells
-        int nPins = netCell[net].size();
+        int nPins = t_netCell[net].size();
         if(nPins < 2){
             continue;
         }
@@ -251,8 +222,8 @@ void B2BModel(){
         int lxc,hxc,lyc,hyc;
         bool lxm,hxm,lym,hym;
         lxp = hxp = lyp = hyp = 0;
-        lxc = hxc = lyc = hyc = netCell[net][0];
-        if(lxc < numCells){
+        lxc = hxc = lyc = hyc = t_netCell[net][0];
+        if(lxc < t_numCells){
             lx = hx = varX[lxc];
             ly = hy = varY[lyc];
             lxm = hxm = lym = hym = true;
@@ -262,10 +233,10 @@ void B2BModel(){
             lxm = hxm = lym = hym = false;
         }
         for(int p=1; p<nPins; p++){
-            int cell = netCell[net][p];
+            int cell = t_netCell[net][p];
             double px, py;
             bool mov;
-            if(cell < numCells){
+            if(cell < t_numCells){
                 px = varX[cell];
                 py = varY[cell];
                 mov = true;
@@ -302,10 +273,10 @@ void B2BModel(){
             continue;
             printlog(LOG_ERROR, "same bounding (%d) [%d,%d][%d,%d]", nPins, lxc, hxc, lyc, hyc);
             for(int i=0; i<nPins; i++){
-                int cell = netCell[net][i];
+                int cell = t_netCell[net][i];
                 double px,py;
                 bool movable;
-                if(cell < numCells){
+                if(cell < t_numCells){
                     px = varX[cell];
                     py = varY[cell];
                     movable = true;
@@ -323,17 +294,17 @@ void B2BModel(){
         }
 
         //enumerate B2B connections
-        double w = 2.0 * netWeight[net] / (double) (nPins-1);
+        double w = 2.0  / (double) (nPins-1);
         double weightX = w / max(MinCellDist, hx-lx);
         double weightY = w / max(MinCellDist, hy-ly);
         B2BaddInC_b(net, Cx, bx, lxc, hxc, lx, hx, lxm, hxm, weightX, &Cxsize, idxGetX, idxSetX);
         B2BaddInC_b(net, Cy, by, lyc, hyc, ly, hy, lym, hym, weightY, &Cysize, idxGetY, idxSetY);
         
         for(int p=0; p<nPins; p++){
-            int cell = netCell[net][p];
+            int cell = t_netCell[net][p];
             double px, py;
             bool mov;
-            if(cell < numCells){
+            if(cell < t_numCells){
                 px = varX[cell];
                 py = varY[cell];
                 mov = true;
@@ -357,256 +328,6 @@ void B2BModel(){
         }
     }
 }
-
-void StarModel(){
-    for(int net=0; net<numNets; net++){
-        int nPins = netCell[net].size();
-        if(nPins<2){
-            continue;
-        }
-        double w = 1.0 * netWeight[net] / (double)nPins;
-        int star = numCells+net;
-        double starX = 0.0;
-        double starY = 0.0;
-        for(int i=0; i<nPins; i++){
-            int cell = netCell[net][i];
-            double x, y;
-            bool mov;
-            if(cell < numCells){
-                x = varX[cell];
-                y = varY[cell];
-                mov = true;
-            }else{
-                x = cellX[cell] + netPinX[net][i];
-                y = cellY[cell] + netPinY[net][i];
-                mov = false;
-            }
-            starX += x;
-            starY += y;
-            B2BaddInC_b(net, Cx, bx, cell, star, x, 0.0, mov, true, w, &Cxsize, idxGetX, idxSetX);
-            B2BaddInC_b(net, Cy, by, cell, star, y, 0.0, mov, true, w, &Cysize, idxGetY, idxSetY);
-        }
-        varX[star] = starX / (double)nPins;
-        varY[star] = starY / (double)nPins;
-    }
-}
-
-void CliqueModel(){
-    for(int net=0; net<numNets; net++){
-        int nPins = netCell[net].size();
-        if(nPins < 2){
-            continue;
-        }
-        double w = 2.0 * netWeight[net] / (double)nPins / (double)(nPins - 1);
-        for(int i=0; i<nPins; i++){
-            int cellI = netCell[net][i];
-            double xi, yi, xj, yj;
-            bool movi, movj;
-            if(cellI < numCells){
-                xi = varX[cellI];
-                yi = varY[cellI];
-                movi = true;
-            }else{
-                xi = cellX[cellI] + netPinX[net][i];
-                yi = cellY[cellI] + netPinY[net][i];
-                movi = false;
-            }
-            for(int j=i+1; j<nPins; j++){
-                int cellJ = netCell[net][j];
-                if(cellJ < numCells){
-                    xj = varX[cellJ];
-                    yj = varY[cellJ];
-                    movj = true;
-                }else{
-                    xj = cellX[cellJ] + netPinX[net][j];
-                    yj = cellY[cellJ] + netPinY[net][j];
-                    movj = false;
-                }
-                B2BaddInC_b(net, Cx, bx, cellI, cellJ, xi, xj, movi, movj, w, &Cxsize, idxGetX, idxSetX);
-                B2BaddInC_b(net, Cy, by, cellI, cellJ, yi, yj, movi, movj, w, &Cysize, idxGetY, idxSetY);
-            }
-        }
-    }
-}
-
-void MSTModel(){
-    for(int net=0; net<numNets; net++){
-        int nPins = netCell[net].size();
-        if(nPins<2){
-            continue;
-        }
-        double w = 1.0 * netWeight[net] / (double)nPins;
-        int star = netCell[net][0];
-        double starX = 0.0;
-        double starY = 0.0;
-        for(int i=1; i<nPins; i++){
-            int cell = netCell[net][i];
-            double x, y;
-            bool mov;
-            if(cell < numCells){
-                x = varX[cell];
-                y = varY[cell];
-                mov = true;
-            }else{
-                x = cellX[cell] + netPinX[net][i];
-                y = cellY[cell] + netPinY[net][i];
-                mov = false;
-            }
-            starX += x;
-            starY += y;
-            B2BaddInC_b(net, Cx, bx, cell, star, x, 0.0, mov, true, w, &Cxsize, idxGetX, idxSetX);
-            B2BaddInC_b(net, Cy, by, cell, star, y, 0.0, mov, true, w, &Cysize, idxGetY, idxSetY);
-        }
-        varX[star] = starX / (double)nPins;
-        varY[star] = starY / (double)nPins;
-    }
-}
-
-void HybridModel(){
-    for(int net=0; net<numNets; net++){
-        int nPins = netCell[net].size();
-        if(nPins < 2){
-            continue;
-        }else if(nPins == 2){
-            double w = netWeight[net];
-            int i = netCell[net][0];
-            bool movi;
-            double xi,yi;
-            if(i < numCells){
-                xi = varX[i];
-                yi = varY[i];
-                movi = true;
-            }else{
-                xi = cellX[i] + netPinX[net][0];
-                yi = cellY[i] + netPinY[net][0];
-                movi = false;
-            }
-            int j = netCell[net][1];
-            bool movj;
-            double xj,yj;
-            if(j < numCells){
-                xj = varX[j];
-                yj = varY[j];
-                movj = true;
-            }else{
-                xj = cellX[j] + netPinX[net][1];
-                yj = cellY[j] + netPinY[net][1];
-                movj = false;
-            }
-            B2BaddInC_b(net, Cx, bx, i, j, xi, xj, movi, movj, w, &Cxsize, idxGetX, idxSetX);
-            B2BaddInC_b(net, Cy, by, i, j, yi, yj, movi, movj, w, &Cysize, idxGetY, idxSetY);
-        }else if(nPins == 3){
-            double w = netWeight[net] / 3.0;
-            int i = netCell[net][0];
-            bool movi;
-            double xi,yi;
-            if(i < numCells){
-                xi = varX[i];
-                yi = varY[i];
-                movi = true;
-            }else{
-                xi = cellX[i] + netPinX[net][0];
-                yi = cellY[i] + netPinY[net][0];
-                movi = false;
-            }
-            int j = netCell[net][1];
-            bool movj;
-            double xj,yj;
-            if(j < numCells){
-                xj = varX[j];
-                yj = varY[j];
-                movj = true;
-            }else{
-                xj = cellX[j] + netPinX[net][1];
-                yj = cellY[j] + netPinY[net][1];
-                movj = false;
-            }
-            int k = netCell[net][2];
-            bool movk;
-            double xk,yk;
-            if(k < numCells){
-                xk = varX[k];
-                yk = varY[k];
-                movk = true;
-            }else{
-                xk = cellX[k] + netPinX[net][2];
-                yk = cellY[k] + netPinY[net][2];
-                movk = false;
-            }
-            B2BaddInC_b(net, Cx, bx, i, j, xi, xj, movi, movj, w, &Cxsize, idxGetX, idxSetX);
-            B2BaddInC_b(net, Cy, by, i, j, yi, yj, movi, movj, w, &Cysize, idxGetY, idxSetY);
-            B2BaddInC_b(net, Cx, bx, j, k, xj, xk, movj, movk, w, &Cxsize, idxGetX, idxSetX);
-            B2BaddInC_b(net, Cy, by, j, k, yj, yk, movj, movk, w, &Cysize, idxGetY, idxSetY);
-            B2BaddInC_b(net, Cx, bx, k, i, xk, xi, movk, movi, w, &Cxsize, idxGetX, idxSetX);
-            B2BaddInC_b(net, Cy, by, k, i, yk, yi, movk, movi, w, &Cysize, idxGetY, idxSetY);
-
-        }else{
-            double w = 1.0 * netWeight[net] / (double)nPins;
-            int star = numCells+net;
-            double starX = 0.0;
-            double starY = 0.0;
-            for(int i=0; i<nPins; i++){
-                int cell = netCell[net][i];
-                double x, y;
-                bool mov;
-                if(cell < numCells){
-                    x = varX[cell];
-                    y = varY[cell];
-                    mov = true;
-                }else{
-                    x = cellX[cell] + netPinX[net][i];
-                    y = cellY[cell] + netPinY[net][i];
-                    mov = false;
-                }
-                starX += x;
-                starY += y;
-                B2BaddInC_b(net, Cx, bx, cell, star, x, 0.0, mov, true, w, &Cxsize, idxGetX, idxSetX);
-                B2BaddInC_b(net, Cy, by, cell, star, y, 0.0, mov, true, w, &Cysize, idxGetY, idxSetY);
-            }
-            varX[star] = starX / (double)nPins;
-            varY[star] = starY / (double)nPins;
-        }
-    }
-}
-
-void UpdateBoxConstraintRect(){
-    findCellRegionDist();
-    //legalizeRegion();
-    for(int i=0; i<numCells; i++){
-        int f=cellFence[i];
-        int r=cellFenceRect[i];
-        lox[i]=fenceRectLX[f][r];
-        hix[i]=fenceRectHX[f][r];
-        loy[i]=fenceRectLY[f][r];
-        hiy[i]=fenceRectHY[f][r];
-
-        cellX[i]=max(lox[i], min(hix[i], cellX[i]));
-        cellY[i]=max(loy[i], min(hiy[i], cellY[i]));
-    }
-}
-void UpdateBoxConstraintBBox(){
-    vector<double> lx(numFences, coreHX);
-    vector<double> ly(numFences, coreHY);
-    vector<double> hx(numFences, coreLX);
-    vector<double> hy(numFences, coreLY);
-    for(int f=0; f<numFences; f++){
-        int nRects = fenceRectLX[f].size();
-        for(int r=0; r<nRects; r++){
-            lx[f] = min(lx[f], fenceRectLX[f][r]);
-            ly[f] = min(ly[f], fenceRectLY[f][r]);
-            hx[f] = max(hx[f], fenceRectHX[f][r]);
-            hy[f] = max(hy[f], fenceRectHY[f][r]);
-        }
-    }
-    for(int i=0; i<numCells; i++){
-        lox[i]=lx[cellFence[i]];
-        loy[i]=ly[cellFence[i]];
-        hix[i]=hx[cellFence[i]];
-        hiy[i]=hy[cellFence[i]];
-        cellX[i]=max(lox[i], min(hix[i], cellX[i]));
-        cellY[i]=max(loy[i], min(hiy[i], cellY[i]));
-    }
-}
 void UpdateBoxConstraintRelaxedRect(double relax, double maxDisp){
     //relax: 0.0 = Sub-Fence 1.0 = Fence-BBox
     findCellRegionDist();
@@ -625,7 +346,7 @@ void UpdateBoxConstraintRelaxedRect(double relax, double maxDisp){
         }
     }
 
-    for(int i=0; i<numCells; i++){
+    for(int i=0; i<t_numCells; i++){
         int f=cellFence[i];
         int r=cellFenceRect[i];
         double rlx = fenceRectLX[f][r];
@@ -673,7 +394,7 @@ void jacobiM_inverse(){
 
 void pseudonetAddInC_b(double alpha){
     double weight;
-    for(int i=0; i<numCells; i++){
+    for(int i=0; i<t_numCells; i++){
         //weight = alpha / max(MinCellDist, cellDispX[i]);
         weight=alpha/max(MinCellDist, abs(lastVarX[i]-varX[i]));
         addToC(Cx, i, i, weight, &Cxsize, idxGetX, idxSetX);
@@ -692,69 +413,41 @@ void lowerBound(
         int repeat,
         LBMode mode, NetModel model,
         double relax,
-        double maxDisp){
+        double maxDisp,
+        vector<double> &cellX,
+        vector<double> &cellY,
+        int pins,
+        int cells,
+        int nets,
+        vector<vector<int>> net_Cell
+        ){
+    //setting
+    t_numPins = pins;
+    t_numCells = cells;
+    t_numNets = nets;
+    t_netCell = net_Cell;
 
     int CGi_max=500; //--The maximum iteration times of CG
-    initCG(model);
-    copy(cellX.begin(), cellX.begin()+numCells, varX.begin());
-    copy(cellY.begin(), cellY.begin()+numCells, varY.begin());
+    initCG(model,cellX,cellY);
+    copy(cellX.begin(), cellX.begin()+t_numCells, varX.begin());
+    copy(cellY.begin(), cellY.begin()+t_numCells, varY.begin());
 
     for(int r=0; r<repeat; r++){
         bool enableBox=false;
         resetCG();
-
-        if(numFences == 1){
-            enableBox = false;
-        }else if(mode == LBModeFenceBBox){
-            UpdateBoxConstraintRelaxedRect(1.0, maxDisp);
-            enableBox=true;
-        }else if(mode == LBModeFenceRect){
-            UpdateBoxConstraintRelaxedRect(0.0, maxDisp);
-            enableBox=true;
-        }else if(mode == LBModeFenceRelax){
-            UpdateBoxConstraintRelaxedRect(relax, maxDisp);
-            enableBox = true;
-        }else{
-            //don't find box constraint
-            enableBox=false;
-        }
-
-        if(model == NetModelClique){
-            CliqueModel();
-        }else if(model == NetModelStar){
-            StarModel();
-        }else if(model == NetModelB2B){
-            B2BModel();
-        }else if(model == NetModelHybrid){
-            HybridModel();
-        }else if(model == NetModelMST){
-            MSTModel();
-        }else{
-            printlog(LOG_ERROR, "net model not handled");
-        }
-
-
+        B2BModel();
         if(pseudoAlpha>0.0){
             pseudonetAddInC_b(pseudoAlpha);
         }
-
-        //sort(Cx.begin(), Cx.end(), SparseMatrix::compareRowCol);
-        //sort(Cy.begin(), Cy.end(), SparseMatrix::compareRowCol);
-        // Update the diagonal inverse matrix M_inverse after updating matrix C
         jacobiM_inverse();
-        //jacobiCG(Cx, bx, varX, lox, hix, Mx_inverse, CGi_max, epsilon, numMovables, Cxsize, enableBox);
-        //jacobiCG(Cy, by, varY, loy, hiy, My_inverse, CGi_max, epsilon, numMovables, Cysize, enableBox);
         jacobiCG(   Cx, bx, varX, lox, hix, Mx_inverse, CGi_max, epsilon, numMovables, Cxsize,
                     Cy, by, varY, loy, hiy, My_inverse, CGi_max, epsilon, numMovables, Cysize,
                     enableBox);
-        //copy(varX.begin(), varX.begin()+numCells, cellX.begin());
-        //copy(varY.begin(), varY.begin()+numCells, cellY.begin());
-        //printlog(LOG_INFO, "after cg: %ld", (long)hpwl());
     }
     
-    copy(varX.begin(), varX.begin()+numCells, cellX.begin());
-    copy(varY.begin(), varY.begin()+numCells, cellY.begin());
-    copy(varX.begin(), varX.begin()+numCells, lastVarX.begin());
-    copy(varY.begin(), varY.begin()+numCells, lastVarY.begin());
+    copy(varX.begin(), varX.begin()+t_numCells, cellX.begin());
+    copy(varY.begin(), varY.begin()+t_numCells, cellY.begin());
+    copy(varX.begin(), varX.begin()+t_numCells, lastVarX.begin());
+    copy(varY.begin(), varY.begin()+t_numCells, lastVarY.begin());
 }
 

@@ -6,10 +6,14 @@
 #include "bits/stdc++.h"
 using namespace db;
 #include <sys/wait.h>
+#include<sys/shm.h>
 #include <unistd.h>
 // ICCAD2022
 int _scale = 0;
 pid_t pid;
+int shmid,shmid2,shmid3,shmid4;
+std::map<int,int> top_to_g;
+std::map<int,int> bottom_to_g;
 class Tech
 {
 public:
@@ -135,7 +139,7 @@ public:
     vector<string> net_name;
     vector<vector<string>> net_cell_name;
     vector<vector<string>> net_pin_name;
-    unordered_map<string, int> cell_inst_map; // from typename to index
+    map<string, int> cell_inst_map; // from typename to index
     vector<Die_infro *> cell_inst_die;        // 0 for top,1 for bottom
     vector<int> cell_inst_size;
     class FM
@@ -483,7 +487,8 @@ public:
     }
     pair<int, int> pin_result(int i, int j)
     {
-        if (cell_inst_map.find(net_cell_name[i][j]) == cell_inst_map.end() || cell_xy.find(net_cell_name[i][j]) == cell_xy.end() || cell_inst_map.find(net_cell_name[i][j]) == cell_inst_map.end())
+        
+        if (cell_xy.find(net_cell_name[i][j]) == cell_xy.end() || cell_inst_map.find(net_cell_name[i][j]) == cell_inst_map.end())
         {
             cerr << "Error to find pin result with cell_name:" << net_cell_name[i][j] << endl;
         }
@@ -504,10 +509,11 @@ public:
     }
     Die_infro *pin_to_die(int i, int j)
     {
+        /*
         if (cell_inst_map.find(net_cell_name[i][j]) == cell_inst_map.end())
         {
             cerr << "Error to find pin_to_die with cell_name:" << net_cell_name[i][j] << endl;
-        }
+        }*/
         int cell_index = cell_inst_map[net_cell_name[i][j]];
         return cell_inst_die[cell_index];
     }
@@ -1422,6 +1428,35 @@ void printTokens(vector<string> &tokens)
 }
 
 // ICCAD2022 read
+bool Database::readICCAD2022_setup(const std::string &FILE)
+{
+    printlog(LOG_INFO, "reading iccad2022.");
+    readICCAD2022(FILE); // this auxfile should be input txt
+    // process top die first
+    io::IOModule::cells=global_inst.cell_inst_num;
+    io::IOModule::nets=global_inst.net_num;
+    io::IOModule::pins=0;
+    shmid=shmget(0,sizeof(double)*io::IOModule::cells,IPC_CREAT|0600);
+    shmid2=shmget(0,sizeof(double)*io::IOModule::cells,IPC_CREAT|0600);
+    shmid3=shmget(0,sizeof(sem_t),IPC_CREAT|0600);
+    shmid4=shmget(0,sizeof(sem_t),IPC_CREAT|0600);
+    io::IOModule::shared_memx=(double*)shmat(shmid,NULL,0);
+    io::IOModule::shared_memy=(double*)shmat(shmid2,NULL,0);
+    io::IOModule::end_of_LB=(sem_t*)shmat(shmid3,NULL,0);
+    io::IOModule::data_ready=(sem_t*)shmat(shmid4,NULL,0);
+    io::IOModule::top_c=top.cell_num;
+    io::IOModule::bott_c=bottom.cell_num;
+    for(int i=0;i<io::IOModule::nets;i++){
+        io::IOModule::pins+=global_inst.net_pin_num[i];
+        io::IOModule::netCells.push_back(vector<int>());
+        for(int j=0;j<global_inst.net_pin_num[i];j++)
+            io::IOModule::netCells[i].push_back(global_inst.cell_inst_map[global_inst.net_cell_name[i][j]]);
+    }
+    sem_init(io::IOModule::end_of_LB, 1, 0);
+    sem_init(io::IOModule::data_ready, 1, 0);
+    pid = fork();
+    io::IOModule::pid=pid;
+    if (pid == -1)
 
 bool Database::readICCAD2022_setup(const std::string &FILE, bool load)
 {
@@ -1432,6 +1467,24 @@ bool Database::readICCAD2022_setup(const std::string &FILE, bool load)
         // process top die first
         bsData.load_2Die(top, bottom);
     }
+    else if (pid == 0)
+    {
+        io::IOModule::TOP = true;
+        io::IOModule::die_to_g=top_to_g;
+    }
+    else
+    {
+        io::IOModule::ANS = true;
+        io::IOModule::die_to_g=bottom_to_g;
+    }
+    if (io::IOModule::load_place)
+        return true;
+    
+    if (io::IOModule::TOP || !io::IOModule::ANS)
+        bsData.load_Die(top);
+    else
+        bsData.load_Die(bottom);
+
     bsData.estimateSiteSize();
     if (bsData.siteWidth < 10)
     {
@@ -1850,6 +1903,14 @@ bool Database::readICCAD2022(const std::string &in_filename)
         (now_tech) = global_inst.cell_inst_die[cell_encoding]->tech;
         int typeID = (*now_tech).typeMap[global_inst.type_name[cell_encoding]];
         int cellID = (*now_tech).nCells++;
+        if(now_tech==top.tech){
+            top_to_g[cellID]=cell_encoding;
+            io::IOModule::g_to_die[cell_encoding]=make_pair(0,cellID);
+        }
+        else if(now_tech==bottom.tech){
+            bottom_to_g[cellID]=cell_encoding;
+            io::IOModule::g_to_die[cell_encoding]=make_pair(1,cellID);
+        }
         if ((*now_tech).cellMap.find(global_inst.cName[cell_encoding]) != (*now_tech).cellMap.end())
         {
             printlog(LOG_ERROR, "Repeatedly Allocate Instance: %s ", global_inst.cName[cell_encoding]);
@@ -1949,6 +2010,14 @@ bool Database::writeICCAD2022(const std::string &file)
         }
         else
         {
+            waitpid(pid, NULL, WUNTRACED);
+            cout<<"Semaphore1:"<<sem_destroy(io::IOModule::data_ready)<<endl;
+            cout<<"Semaphore2:"<<sem_destroy(io::IOModule::end_of_LB)<<endl;
+            cout<<"S_mem1:"<<shmctl(shmid,IPC_RMID,NULL)<<endl;
+            cout<<"S_mem2:"<<shmctl(shmid2,IPC_RMID,NULL)<<endl;
+            cout<<"S_mem3:"<<shmctl(shmid3,IPC_RMID,NULL)<<endl;
+            cout<<"S_mem4:"<<shmctl(shmid4,IPC_RMID,NULL)<<endl;
+            cout << "wait ending" << endl;
             io::IOModule::ANS = true;
         }
         if (io::IOModule::TOP || !io::IOModule::ANS)
@@ -1982,6 +2051,12 @@ bool Database::writeICCAD2022(const std::string &file)
             }
         }
         global_inst.write_Place_result(io::IOModule::TOP, "top.txt");
+        cout<<"Semaphore1:"<<sem_destroy(io::IOModule::data_ready)<<endl;
+        cout<<"Semaphore2:"<<sem_destroy(io::IOModule::end_of_LB)<<endl;
+        shmdt(io::IOModule::end_of_LB);
+        shmdt(io::IOModule::data_ready);
+        shmdt(io::IOModule::shared_memx);
+        shmdt(io::IOModule::shared_memy);
     }
     if (io::IOModule::ANS)
     {
