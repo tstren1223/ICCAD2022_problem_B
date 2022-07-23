@@ -10,7 +10,6 @@ using namespace db;
 #include <unistd.h>
 // ICCAD2022
 int _scale = 0;
-
 pid_t pid;
 int shmid,shmid2,shmid3,shmid4;
 std::map<int,int> top_to_g;
@@ -962,6 +961,28 @@ public:
         }
         return true;
     }
+    void GP_into_2Die(Die_infro &a, Die_infro &b)
+    {
+        for (auto cell : database.cells)
+        {
+            string n = cell->name();
+            int d = cell->die;
+            int x = cell->lx() / _scale;
+            int y = cell->ly() / _scale;
+            Tech *now_t = NULL;
+            if (d == 1)
+            {
+                now_t = b.tech;
+            }
+            else if (!d)
+            {
+                now_t = a.tech;
+            }
+            int encode = now_t->cellMap[n];
+            now_t->cellX[encode] = x;
+            now_t->cellY[encode] = y;
+        }
+    }
 };
 Instance global_inst;
 
@@ -1016,6 +1037,111 @@ public:
     int tileH;
     double blockagePorosity;
     // ICCAD2022
+    void load_2Die(Die_infro &a, Die_infro &b)
+    {
+        nRows = a.nRows + b.nRows;
+        rowX = a.rowX;
+        rowX.insert(rowX.end(), b.rowX.begin(), b.rowX.end());
+        rowY = a.rowY;
+        rowY.insert(rowY.end(), b.rowY.begin(), b.rowY.end());
+        rowSites = a.rowSites;
+        rowSites.insert(rowSites.end(), b.rowSites.begin(), b.rowSites.end());
+        // tech
+        Tech &c = *a.tech;
+        Tech &d = *b.tech;
+        nCells = c.nCells + d.nCells;
+        nTypes = c.nTypes + d.nTypes;
+        nNets = global_inst.net_num;
+        typeMap = c.typeMap;
+        for (auto d_it : d.typeMap)
+        {
+            typeMap[d_it.first + "_bottom"] = d_it.second + c.nTypes;
+        }
+        typeName = c.typeName;
+        for (auto d_it : d.typeName)
+        {
+            typeName.push_back(d_it + "_bottom");
+        }
+        typeName.insert(typeName.end(), d.typeName.begin(), d.typeName.end());
+        typeWidth = c.typeWidth;
+        typeWidth.insert(typeWidth.end(), d.typeWidth.begin(), d.typeWidth.end());
+        typeHeight = c.typeHeight;
+        typeHeight.insert(typeHeight.end(), d.typeHeight.begin(), d.typeHeight.end());
+        typeFixed = c.typeFixed;
+        typeFixed.insert(typeFixed.end(), d.typeFixed.begin(), d.typeFixed.end());
+        cellMap = c.cellMap;
+        for (auto d_it : d.cellMap)
+        {
+            cellMap[d_it.first] = d_it.second + c.nCells;
+        }
+        cellName = c.cellName;
+        cellName.insert(cellName.end(), d.cellName.begin(), d.cellName.end());
+        cellX = c.cellX;
+        cellX.insert(cellX.end(), d.cellX.begin(), d.cellX.end());
+        cellY = c.cellY;
+        cellY.insert(cellY.end(), d.cellY.begin(), d.cellY.end());
+        cellFixed = c.cellFixed;
+        cellFixed.insert(cellFixed.end(), d.cellFixed.begin(), d.cellFixed.end());
+        cellType = c.cellType;
+        for (auto d_it : d.cellType)
+        {
+            cellType.push_back(d_it + c.nTypes);
+        }
+        // allocate net
+        typePinMap = c.typePinMap;
+        typePinName = c.typePinName;
+        typePinName.insert(typePinName.end(), d.typePinName.begin(), d.typePinName.end());
+        typeNPins = c.typeNPins;
+        typeNPins.insert(typeNPins.end(), d.typeNPins.begin(), d.typeNPins.end());
+        typePinDir = c.typePinDir;
+        typePinDir.insert(typePinDir.end(), d.typePinDir.begin(), d.typePinDir.end());
+        typePinX = c.typePinX;
+        typePinX.insert(typePinX.end(), d.typePinX.begin(), d.typePinX.end());
+        typePinY = c.typePinY;
+        typePinY.insert(typePinY.end(), d.typePinY.begin(), d.typePinY.end());
+        for (auto d_it : d.typePinMap)
+        {
+            string s = d_it.first;
+            int pos = s.find(":");
+            s.insert(pos, "_bottom");
+            typePinMap[s] = d_it.second;
+        }
+        for (int i = 0; i < global_inst.net_num; i++)
+        {
+            string nName = global_inst.net_name[i];
+            netName.push_back(nName);
+            netCells.push_back(*new vector<int>);
+            netPins.push_back(*new vector<int>);
+            for (int j = 0; j < global_inst.net_pin_num[i]; j++)
+            {
+                int cell_encoding = global_inst.cell_inst_map[global_inst.net_cell_name[i][j]]; // instance encoding
+                Tech *now_tech = global_inst.cell_inst_die[cell_encoding]->tech;
+                // Net
+                string cName = global_inst.net_cell_name[i][j];
+                string pinName = global_inst.net_pin_name[i][j];
+                if (cellMap.find(cName) == (*now_tech).cellMap.end())
+                {
+                    assert(false);
+                    printlog(LOG_ERROR, "cell not found in data1: %s", cName.c_str());
+                }
+                int cellID = cellMap[cName];
+                int typeID = cellType[cellID];
+                int typePinID = -1;
+                string tpName;
+                tpName.append(typeName[typeID]);
+                tpName.append(":");
+                tpName.append(pinName);
+                if (typePinMap.find(tpName) == typePinMap.end())
+                {
+                    assert(false);
+                    printlog(LOG_ERROR, "cell_pin not found in data1: %s", tpName);
+                }
+                typePinID = typePinMap[tpName];
+                netCells[i].push_back(cellID);
+                netPins[i].push_back(typePinID);
+            }
+        }
+    }
     void load_Die(Die_infro &a)
     {
         nRows = a.nRows;
@@ -1331,8 +1457,15 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     pid = fork();
     io::IOModule::pid=pid;
     if (pid == -1)
+
+bool Database::readICCAD2022_setup(const std::string &FILE, bool load)
+{
+    if (load)
     {
-        cerr << "fork error";
+        printlog(LOG_INFO, "reading iccad2022.");
+        readICCAD2022(FILE); // this auxfile should be input txt
+        // process top die first
+        bsData.load_2Die(top, bottom);
     }
     else if (pid == 0)
     {
@@ -1486,7 +1619,12 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
         else
         {
             string celltypename(bsData.typeName[typeID]);
-            Cell *cell = database.addCell(bsData.cellName[i], database.getCellType(celltypename));
+            int d = 0;
+            if (global_inst.cell_to_die(bsData.cellName[i]) == &bottom)
+            {
+                d = 1;
+            }
+            Cell *cell = database.addCell(bsData.cellName[i], database.getCellType(celltypename), d);
             cell->place(bsData.cellX[i], bsData.cellY[i], false, false);
             cell->fixed((bsData.cellFixed[i] == (char)1));
         }
@@ -1515,6 +1653,12 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     }
 
     bsData.clearData();
+    database.setup(!load);
+    database.errorCheck();
+    printlog(LOG_INFO,
+             "wirelength = %.2lf (scale=%.2lf)",
+             (double)database.getHPWL() / (double)database.siteW,
+             (double)database.siteW);
     return true;
 }
 bool Database::readICCAD2022(const std::string &in_filename)
@@ -1849,13 +1993,20 @@ bool Database::readICCAD2022(const std::string &in_filename)
 
 bool Database::writeICCAD2022(const std::string &file)
 {
-    if (pid > 0)
+    if (io::IOModule::GP_check)
     {
-        if (io::IOModule::GP_check)
+        io::IOModule::GP_check = false;
+        // global_inst.write_GP_result("gp_bottom.txt");
+        global_inst.GP_into_2Die(top, bottom);
+        database.clear();
+        pid = fork();
+        if (pid == -1)
         {
-            io::IOModule::GP_check=false;
-            global_inst.write_GP_result("gp_top.txt");
-            return true;
+            cerr << "fork error";
+        }
+        else if (pid == 0)
+        {
+            io::IOModule::TOP = true;
         }
         else
         {
@@ -1867,12 +2018,20 @@ bool Database::writeICCAD2022(const std::string &file)
             cout<<"S_mem3:"<<shmctl(shmid3,IPC_RMID,NULL)<<endl;
             cout<<"S_mem4:"<<shmctl(shmid4,IPC_RMID,NULL)<<endl;
             cout << "wait ending" << endl;
+            io::IOModule::ANS = true;
         }
-    }
-    else if(io::IOModule::GP_check){
-        io::IOModule::GP_check=false;
-        global_inst.write_GP_result("gp_bottom.txt");
+        if (io::IOModule::TOP || !io::IOModule::ANS)
+            bsData.load_Die(top);
+        else
+            bsData.load_Die(bottom);
+        readICCAD2022_setup("", false);
+        cout << "Set up finishing!" << endl;
         return true;
+    }
+    if (pid > 0)
+    {
+        waitpid(pid, NULL, WUNTRACED);
+        cout << "wait ending" << endl;
     }
     if (io::IOModule::TOP)
     {

@@ -62,7 +62,7 @@ CellType* Database::addCellType(const string& name, unsigned libcell) {
     return celltype;
 }
 
-Cell* Database::addCell(const string& name, CellType* type) {
+Cell* Database::addCell(const string& name, CellType* type,int die) {
     Cell* cell = getCell(name);
     if (cell) {
         printlog(LOG_WARN, "cell re-defined: %s", name.c_str());
@@ -71,7 +71,7 @@ Cell* Database::addCell(const string& name, CellType* type) {
         }
         return cell;
     }
-    cell = new Cell(name, type);
+    cell = new Cell(name, type,die);
 #ifdef _GNUC_4_8_
     name_cells.emplace(name, cell);
 #else
