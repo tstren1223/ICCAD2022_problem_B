@@ -8,7 +8,7 @@
 #include "gp_qsolve.h"
 #include "gp_region.h"
 #include "gp_spread.h"
-
+#include "../io/io.h"
 #ifdef LIBGD
 #include "gp_draw.h"
 #endif
@@ -21,7 +21,8 @@ void upperBound(const int iter, const int binSize, const int legalTimes, const i
 bool enable_keepinflate = false;
 // bool enable_fencemode=false;
 
-void gp_main() {
+void gp_main()
+{
     unsigned timer_id = utils::Timer::start();
 
     printlog(LOG_INFO, "#nodes : %d", numNodes);
@@ -44,16 +45,85 @@ void gp_main() {
     utils::Timer::stop(timer_id);
 }
 
-void placement() {
-    int initIter = GPModule::InitIterations;  // initial CG iteration
+void merge_lower_bound(int &initIter, NetModel &initNetModel, NetModel &mainNetModel, bool init, double pnWeightBegin = 0, double pnWeightEnd = 0, int iter = 0, int mainIter = 0, int LBIter = 0)
+{
+
+    int pins = io::IOModule::pins;
+    int cells = io::IOModule::cells;
+    int nets = io::IOModule::nets;
+    if (io::IOModule::pid > 0) // bottom
+    {
+        for (int i = 0; i < io::IOModule::bott_c; i++)
+        {
+            io::IOModule::shared_memx[io::IOModule::die_to_g[i]] = cellX[i];
+            io::IOModule::shared_memy[io::IOModule::die_to_g[i]] = cellY[i];
+            //cout<<"(GB)Put"<<i<<"to "<<io::IOModule::die_to_g[i]<<endl;
+        }
+        sem_wait(io::IOModule::data_ready);
+        
+        vector<double> cellX2, cellY2;
+        for (int i = 0; i < cells; i++)
+        {
+            cellX2.push_back(io::IOModule::shared_memx[i]);
+            cellY2.push_back(io::IOModule::shared_memy[i]);
+        }
+        if (init)
+            lowerBound(0.001, 0.0, initIter, LBModeFenceBBox, initNetModel, 0.0, -1, cellX2, cellY2, pins, cells, nets, io::IOModule::netCells);
+        else
+            lowerBound(0.001, pnWeightBegin + (pnWeightEnd - pnWeightBegin) * (iter - 1) / (mainIter - 1), LBIter, LBModeFenceRelax, mainNetModel, 0.0, -1, cellX2, cellY2, pins, cells, nets, io::IOModule::netCells);
+        for (int i = 0; i < cells; i++)
+        {
+            io::IOModule::shared_memx[i] = cellX2[i];
+            io::IOModule::shared_memy[i] = cellY2[i];
+        }
+        sem_post(io::IOModule::end_of_LB);
+        for (int i = 0; i < cells; i++)
+        {
+            if (io::IOModule::g_to_die[i].first == 1)
+            {
+                cellX[io::IOModule::g_to_die[i].second] = io::IOModule::shared_memx[i];
+                cellY[io::IOModule::g_to_die[i].second] = io::IOModule::shared_memy[i];
+                //cout<<"(PB)Put"<<i<<"to "<<io::IOModule::g_to_die[i].second<<endl;
+            }
+        }
+        cellX2.clear();
+        cellY2.clear();
+    }
+    else if (io::IOModule::pid == 0) // top
+    {
+        for (int i = 0; i < io::IOModule::top_c; i++)
+        {
+            io::IOModule::shared_memx[io::IOModule::die_to_g[i]] = cellX[i];
+            io::IOModule::shared_memy[io::IOModule::die_to_g[i]] = cellY[i];
+            //cout<<"(GT)Put"<<i<<"to "<<io::IOModule::die_to_g[i]<<endl;
+        }
+        //cout<<"TOP ready"<<endl;
+        sem_post(io::IOModule::data_ready);
+        //cout<<"TOP wait"<<endl;
+        sem_wait(io::IOModule::end_of_LB);
+        //cout<<"GOT!!"<<endl;
+        for (int i = 0; i < cells; i++)
+        {
+            if (io::IOModule::g_to_die[i].first == 0)
+            {
+                cellX[io::IOModule::g_to_die[i].second] = io::IOModule::shared_memx[i];
+                cellY[io::IOModule::g_to_die[i].second] = io::IOModule::shared_memy[i];
+                //cout<<"(PT)Put"<<i<<"to "<<io::IOModule::g_to_die[i].second<<endl;
+            }
+        }
+    }
+}
+void placement()
+{
+    int initIter = GPModule::InitIterations; // initial CG iteration
     // int initIter     = gpSetting.initIter;    //initial CG iteration
-    int mainWLIter = GPModule::MainWLIterations;  // old version: 3
+    int mainWLIter = GPModule::MainWLIterations; // old version: 3
     // int mainWLIter   = gpSetting.mainWLIter;    // old version: 3
-    int mainCongIter = GPModule::MainCongIterations;  // old version: 34
-    int mainGRIter = GPModule::MainGRIterations;  // heavy global router iteration
+    int mainCongIter = GPModule::MainCongIterations; // old version: 34
+    int mainGRIter = GPModule::MainGRIterations;     // heavy global router iteration
     int LBIter = GPModule::LowerBoundIterations;
     int UBIter = GPModule::UpperBoundIterations;
-    int mainIter = mainWLIter + mainCongIter + mainGRIter;  // total GP iteration
+    int mainIter = mainWLIter + mainCongIter + mainGRIter; // total GP iteration
     int finalIter = GPModule::FinalIterations;
     // int finalIter    = gpSetting.finalIter;
     double pnWeightBegin = GPModule::PseudoNetWeightBegin;
@@ -61,45 +131,66 @@ void placement() {
     double pnWeightEnd = GPModule::PseudoNetWeightEnd;
     // double pnWeightEnd   = gpSetting.pseudoNetWeightEnd;
     NetModel initNetModel = NetModelNone;
-    if (GPModule::InitNetModel == "Clique") {
+    if (GPModule::InitNetModel == "Clique")
+    {
         initNetModel = NetModelClique;
-    } else if (GPModule::InitNetModel == "Star") {
+    }
+    else if (GPModule::InitNetModel == "Star")
+    {
         initNetModel = NetModelStar;
-    } else if (GPModule::InitNetModel == "B2B") {
+    }
+    else if (GPModule::InitNetModel == "B2B")
+    {
         initNetModel = NetModelB2B;
-    } else if (GPModule::InitNetModel == "Hybrid") {
+    }
+    else if (GPModule::InitNetModel == "Hybrid")
+    {
         initNetModel = NetModelHybrid;
-    } else if (GPModule::InitNetModel == "MST") {
+    }
+    else if (GPModule::InitNetModel == "MST")
+    {
         initNetModel = NetModelMST;
     }
     NetModel mainNetModel = NetModelNone;
-    if (GPModule::MainNetModel == "Clique") {
+    if (GPModule::MainNetModel == "Clique")
+    {
         mainNetModel = NetModelClique;
-    } else if (GPModule::MainNetModel == "Star") {
+    }
+    else if (GPModule::MainNetModel == "Star")
+    {
         mainNetModel = NetModelStar;
-    } else if (GPModule::MainNetModel == "B2B") {
+    }
+    else if (GPModule::MainNetModel == "B2B")
+    {
         mainNetModel = NetModelB2B;
-    } else if (GPModule::MainNetModel == "Hybrid") {
+    }
+    else if (GPModule::MainNetModel == "Hybrid")
+    {
         mainNetModel = NetModelHybrid;
-    } else if (GPModule::MainNetModel == "MST") {
+    }
+    else if (GPModule::MainNetModel == "MST")
+    {
         mainNetModel = NetModelMST;
     }
 
     createInflation();
 
-    if (rippleSetting.force_stop) {
+    if (rippleSetting.force_stop)
+    {
         rippleSetting.force_stop = false;
         return;
     }
-    if (initIter > 0) {
+    if (initIter > 0)
+    {
         //--Random placement
-        for (int i = 0; i < numCells; ++i) {
+        for (int i = 0; i < numCells; ++i)
+        {
             cellX[i] = getrand((double)(coreLX + 0.5 * cellW[i]), (double)(coreHX - 0.5 * cellW[i]));
             cellY[i] = getrand((double)(coreLY + 0.5 * cellH[i]), (double)(coreHY - 0.5 * cellH[i]));
         }
         printlog(LOG_INFO, "random wirelength = %lld", (long long)hpwl());
         //--Initial placement (CG)
-        lowerBound(0.001, 0.0, initIter, LBModeFenceBBox, initNetModel);
+        merge_lower_bound(initIter, initNetModel, mainNetModel, true);
         printlog(LOG_INFO, "initial wirelength = %lld", (long long)hpwl());
     }
 #ifdef LIBGD
@@ -107,8 +198,10 @@ void placement() {
 #endif
 
     //--Global Placement Iteration
-    for (int iter = 1; iter <= mainIter; iter++) {
-        if (rippleSetting.force_stop) {
+    for (int iter = 1; iter <= mainIter; iter++)
+    {
+        if (rippleSetting.force_stop)
+        {
             rippleSetting.force_stop = false;
             break;
         }
@@ -117,30 +210,35 @@ void placement() {
 
         //--Upper Bound
         const double td{GPModule::TargetDensityBegin + (GPModule::TargetDensityEnd - GPModule::TargetDensityBegin) * (iter - 1) / (mainIter - 1)};
-        if (iter <= mainWLIter) {
+        if (iter <= mainWLIter)
+        {
             upperBound(iter, 8, UBIter, 0, td);
-        } else if (iter <= mainWLIter + mainCongIter) {
+        }
+        else if (iter <= mainWLIter + mainCongIter)
+        {
             grSetting.router = GRSetting::GRRouter::RippleGR;
             upperBound(iter, 4, UBIter, 1, td);
-        } else {
+        }
+        else
+        {
             grSetting.router = GRSetting::GRRouter::CUGR;
             upperBound(iter, 4, UBIter, 1, td);
         }
-        //long upHPWL = hpwl();
+        long upHPWL = hpwl();
 
 #ifdef LIBGD
         drawcell("gp_up_", iter);
 #endif
 
         //--Lower Bound
-        lowerBound(0.001, pnWeightBegin + (pnWeightEnd - pnWeightBegin) * (iter - 1) / (mainIter - 1), LBIter, LBModeFenceRelax, mainNetModel, 0.0);
-        //long loHPWL = hpwl();
+        merge_lower_bound(initIter, initNetModel, mainNetModel, false, pnWeightBegin, pnWeightEnd, iter, mainIter, LBIter);
+        long loHPWL = hpwl();
 
 #ifdef LIBGD
         drawcell("gp_lo_", iter);
 #endif
 
-        //printlog(LOG_INFO, "[%2d] up=%ld lo=%ld", iter, upHPWL, loHPWL);
+        printlog(LOG_INFO, "[%2d] up=%ld lo=%ld", iter, upHPWL, loHPWL);
     }
 
     upperBound(mainIter + 1, 4, finalIter, 0, GPModule::TargetDensityEnd);
@@ -154,31 +252,41 @@ void placement() {
     // updateCongMap();
 }
 
-void upperBound(const int iter, const int binSize, const int legalTimes, const int inflateTimes, const double td) {
+void upperBound(const int iter, const int binSize, const int legalTimes, const int inflateTimes, const double td)
+{
     spreadCells(binSize, legalTimes, td);
 
     double restoreRatio = 1.0;
-    if (iter < 10) {
+    if (iter < 10)
+    {
         restoreRatio = 0.6;
-    } else {
+    }
+    else
+    {
         restoreRatio = 0.3;
     }
 
     bool inflated = true;
-    for (int i = 0; i < inflateTimes && inflated; i++) {
+    for (int i = 0; i < inflateTimes && inflated; i++)
+    {
         updateCongMap();
-        if (enable_keepinflate) {
+        if (enable_keepinflate)
+        {
             inflated = cellInflation(1, restoreRatio);
-        } else {
+        }
+        else
+        {
             inflated = cellInflation(1, -1.0);
         }
-        if (inflated) {
+        if (inflated)
+        {
             spreadCells(binSize, 1, td);
         }
     }
     // updateCongMap();
 
-    if (!enable_keepinflate) {
+    if (!enable_keepinflate)
+    {
         copy(cellAW.begin(), cellAW.end(), cellW.begin());
         copy(cellAH.begin(), cellAH.end(), cellH.begin());
     }

@@ -9,8 +9,14 @@ void lowerBound(
         int repeat,
         LBMode mode,
         NetModel model,
-        double relax = 0.0,
-        double maxDisp = -1);
+        double relax,
+        double maxDisp,
+        vector<double> &cellX,
+        vector<double> &cellY,
+        int pins,
+        int cells,
+        int nets,
+        vector<vector<int>>net_Cell);
 void initLowerBound();
 
 #endif
