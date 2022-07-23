@@ -75,8 +75,8 @@ private:
 public:
     bool highlighted = false;
     Region* region = nullptr;
-
-    Cell(const string& name = "", CellType* t = nullptr) : _name(name) { ctype(t); }
+    int die;
+    Cell(const string& name = "", CellType* t = nullptr,int d=0) : _name(name) { ctype(t); die=d;}
     ~Cell();
 
     const std::string& name() const { return _name; }

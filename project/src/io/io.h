@@ -4,7 +4,9 @@
 
 
 #include <string>
-
+#include<vector>
+#include<map>
+#include <semaphore.h>
 namespace io {
 class IOModule{
 private:
@@ -39,6 +41,18 @@ public:
     const std::string& name() const { return _name; }
     static bool load();
     static bool save();
+    static double* shared_memx; 
+    static double* shared_memy;
+    static int top_c;
+    static int bott_c;
+    static pid_t pid;
+    static sem_t* end_of_LB, *data_ready;
+    static int pins;
+    static int cells;
+    static int nets;
+    static std::vector<std::vector<int>> netCells;
+    static std::map<int,int> die_to_g;
+    static std::map<int,std::pair<int,int>> g_to_die;
 };
 }
 

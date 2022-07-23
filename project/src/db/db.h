@@ -161,7 +161,7 @@ public:
     inline ViaType* addViaType(const string& name) { return addViaType(name, false); }
     CellType* addCellType(const string& name, unsigned libcell);
     void reserveCells(const size_t n) { cells.reserve(n); }
-    Cell* addCell(const string& name, CellType* type = nullptr);
+    Cell* addCell(const string& name, CellType* type = nullptr,int die=0);
     IOPin* addIOPin(const string& name = "", const string& netName = "", const char direction = 'x');
     void reserveNets(const size_t n) { nets.reserve(n); }
     Net* addNet(const string& name = "", const NDR* ndr = nullptr);
@@ -235,7 +235,7 @@ public:
 public:
 
     bool readICCAD2022(const std::string& in_filename);
-    bool readICCAD2022_setup(const std::string &FILE);
+    bool readICCAD2022_setup(const std::string &FILE,bool load=true);
     bool writeICCAD2022(const std::string&file);
 
 private:
