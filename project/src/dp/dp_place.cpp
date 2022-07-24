@@ -37,9 +37,10 @@ void DPlacer::setupFlow(const std::string &name)
         // flow for wirelength-driven DP
         flow.addStage("PM", DPStage::Technique::Premove, 1);
         flow.addStage("LG", DPStage::Technique::Legalize, DPModule::MaxLGIter);
-        flow.addStage("GM", DPStage::Technique::GlobalMove, DPModule::MaxGMIter);
-        flow.addStage("LM", DPStage::Technique::LocalMove, DPModule::MaxLMIter);
         flow.addStage("NF", DPStage::Technique::GlobalNF, 1);
+        //flow.addStage("GM", DPStage::Technique::GlobalMove, DPModule::MaxGMIter);
+        //flow.addStage("LM", DPStage::Technique::LocalMove, DPModule::MaxLMIter);
+        //flow.addStage("NF", DPStage::Technique::GlobalNF, 1);
     }
     else if (name == "DispDriven")
     {
@@ -466,6 +467,7 @@ unsigned DPlacer::legalizeCell(const int threshold, const unsigned iThread)
                 targetY = max(oRegion.ly, min(targetY, oRegion.hy));
                 oRegion.shift(targetX - oRegion.cx(), targetY - oRegion.cy());
                 if (oRegion.independent(operatingRegions))
+
                 {
                     operatingRegions.emplace(cell, oRegion);
                     tQ->enqueue(*tPtok, make_pair(cell, oRegion));

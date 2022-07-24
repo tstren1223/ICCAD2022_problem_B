@@ -962,6 +962,91 @@ public:
         }
         return true;
     }
+    long long GP_2die_analyze(string top_name,string bottom_name){
+        ifstream top_file(top_name);
+        ifstream bottom_file(bottom_name);
+        if (!top_file.good()||!bottom_file.good())
+        {
+            printlog(LOG_ERROR, "cannot open file: %s or %s", top_name.c_str(),bottom_name.c_str());
+            return -1;
+        }
+        long long cellX[cell_inst_num],cellY[cell_inst_num];
+        long long hpwl = 0;
+        string name;
+        while(top_file>>name){
+            int encoding=cell_inst_map[name];
+            top_file>>cellX[encoding]>>cellY[encoding];
+        }
+        while(bottom_file>>name){
+            int encoding=cell_inst_map[name];
+            bottom_file>>cellX[encoding]>>cellY[encoding];
+        }
+        for (int i = 0; i < net_num; i++)
+        {
+            int top_minX = INT_MAX, top_maxX = INT_MIN, top_minY = INT_MAX, top_maxY = INT_MIN;
+            int bot_minX = INT_MAX, bot_maxX = INT_MIN, bot_minY = INT_MAX, bot_maxY = INT_MIN;
+            int x, y;
+            bool die = true;
+            for (int j = 0; j < net_pin_num[i]; j++)
+            {
+                if (pin_to_die(i, j) == &top)
+                {
+                    die = false;
+                }
+                else
+                {
+                    die = true;
+                }
+                int cell_index = cell_inst_map[net_cell_name[i][j]];
+                string tpName;
+                string tname = type_name[cell_index];
+                tpName.append(tname);
+                tpName.append(":");
+                tpName.append(net_pin_name[i][j]);
+                pair<int, int> pin_xy = make_pair(cellX[cell_index],cellY[cell_index]);
+                Tech *tech = die?bottom.tech:top.tech;
+                int type_index = tech->typeMap[tname];
+                int pin_index = tech->typePinMap[tpName];
+                pin_xy.first += tech->typePinX[type_index][pin_index];
+                pin_xy.second += tech->typePinY[type_index][pin_index];
+                x = pin_xy.first;
+                y = pin_xy.second;
+                if (pin_to_die(i, j) == &bottom) // bot
+                {
+                    bot_minX = min(x, bot_minX);
+                    bot_maxX = max(x, bot_maxX);
+                    bot_minY = min(y, bot_minY);
+                    bot_maxY = max(y, bot_maxY);
+                }
+                else
+                {
+                    top_minX = min(x, top_minX);
+                    top_maxX = max(x, top_maxX);
+                    top_minY = min(y, top_minY);
+                    top_maxY = max(y, top_maxY);
+                }
+            }
+            if (terminals_map.count(i))
+            {
+                x = terminals_map[i].second * top.Terminal_w + top.Terminal_w * 0.5 + top.Terminal_spacing;
+                y = terminals_map[i].first * top.Terminal_h + top.Terminal_h * 0.5 + top.Terminal_spacing;
+                bot_minX = min(x, bot_minX);
+                bot_maxX = max(x, bot_maxX);
+                bot_minY = min(y, bot_minY);
+                bot_maxY = max(y, bot_maxY);
+                top_minX = min(x, top_minX);
+                top_maxX = max(x, top_maxX);
+                top_minY = min(y, top_minY);
+                top_maxY = max(y, top_maxY);
+                hpwl += (top_maxY - top_minY) + (top_maxX - top_minX) + (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
+            }
+            else if (die == false)
+                hpwl += (top_maxY - top_minY) + (top_maxX - top_minX);
+            else
+                hpwl += (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
+        }
+        return hpwl;
+    }
 };
 Instance global_inst;
 
@@ -1860,13 +1945,13 @@ bool Database::writeICCAD2022(const std::string &file)
         else
         {
             waitpid(pid, NULL, WUNTRACED);
-            //cout<<"Semaphore1:"<<sem_destroy(io::IOModule::data_ready)<<endl;
-            //cout<<"Semaphore2:"<<sem_destroy(io::IOModule::end_of_LB)<<endl;
-            //cout<<"S_mem1:"<<shmctl(shmid,IPC_RMID,NULL)<<endl;
-            //cout<<"S_mem2:"<<shmctl(shmid2,IPC_RMID,NULL)<<endl;
-            //cout<<"S_mem3:"<<shmctl(shmid3,IPC_RMID,NULL)<<endl;
-            //cout<<"S_mem4:"<<shmctl(shmid4,IPC_RMID,NULL)<<endl;
-            //cout << "wait ending" << endl;
+            cout<<"Semaphore1:"<<sem_destroy(io::IOModule::data_ready)<<endl;
+            cout<<"Semaphore2:"<<sem_destroy(io::IOModule::end_of_LB)<<endl;
+            cout<<"S_mem1:"<<shmctl(shmid,IPC_RMID,NULL)<<endl;
+            cout<<"S_mem2:"<<shmctl(shmid2,IPC_RMID,NULL)<<endl;
+            cout<<"S_mem3:"<<shmctl(shmid3,IPC_RMID,NULL)<<endl;
+            cout<<"S_mem4:"<<shmctl(shmid4,IPC_RMID,NULL)<<endl;
+            cout << "wait ending" << endl;
         }
     }
     else if(io::IOModule::GP_check){
@@ -1892,8 +1977,8 @@ bool Database::writeICCAD2022(const std::string &file)
             }
         }
         global_inst.write_Place_result(io::IOModule::TOP, "top.txt");
-        cout<<"Semaphore1:"<<sem_destroy(io::IOModule::data_ready)<<endl;
-        cout<<"Semaphore2:"<<sem_destroy(io::IOModule::end_of_LB)<<endl;
+        //cout<<"Semaphore1:"<<sem_destroy(io::IOModule::data_ready)<<endl;
+        //cout<<"Semaphore2:"<<sem_destroy(io::IOModule::end_of_LB)<<endl;
         shmdt(io::IOModule::end_of_LB);
         shmdt(io::IOModule::data_ready);
         shmdt(io::IOModule::shared_memx);
@@ -1931,7 +2016,8 @@ bool Database::writeICCAD2022(const std::string &file)
         printlog(LOG_INFO, "Terminal Insersion is over");
         // Analyze for HPWL
         long long r;
-        printlog(LOG_INFO, "Total HPWL for 2 dies: %lld", r=global_inst.getCost());
+        printlog(LOG_INFO, "(GP)Total HPWL for 2 dies: %lld", r=global_inst.GP_2die_analyze("gp_top.txt","gp_bottom.txt"));
+        printlog(LOG_INFO, "(DP)Total HPWL for 2 dies: %lld", r=global_inst.getCost());
         if(io::IOModule::statics){
             ofstream out_file("statics.txt",std::ios_base::app|std::ios_base::out);
             if (!out_file.good())
