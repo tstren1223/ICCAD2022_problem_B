@@ -123,11 +123,17 @@ int Ripple::getArgs(int argc, char **argv)
                 printlog(LOG_ERROR, "unknown bookshelf format %s", type.c_str());
                 return 1;
             }
+        }else if (!strcmp(argv[a], "-output_def"))
+        {
+            ++a;
+            io::IOModule::BookshelfPlacement.assign(argv[a]);
+            io::IOModule::DefPlacement.assign(argv[a]);
         }
         else if (strcmp(argv[a], "-output") == 0)
         {
             ++a;
             io::IOModule::BookshelfPlacement.assign(argv[a]);
+            io::IOModule::DefPlacement.assign(argv[a]);
         }
         else if (strcmp(argv[a], "-aux") == 0)
         {
@@ -136,6 +142,18 @@ int Ripple::getArgs(int argc, char **argv)
         else if (strcmp(argv[a], "-pl") == 0)
         {
             io::IOModule::BookshelfPl.assign(argv[++a]);
+        }
+         else if (!strcmp(argv[a], "-input_def"))
+        {
+            io::IOModule::DefCell.assign(argv[++a]);
+        }
+        else if (!strcmp(argv[a], "-placed"))
+        {
+            io::IOModule::DefCell.assign(argv[++a]);
+        }
+        else if (strcmp(argv[a], "-floorplan_def") == 0)
+        {
+            io::IOModule::DefFloorplan.assign(argv[++a]);
         }
         else if (strcmp(argv[a], "-targetdensity") == 0)
         {

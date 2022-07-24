@@ -24,7 +24,7 @@ void initializeVariable() {
     tmpOutputDef = TIMESTAMP + "/" + io::IOModule::DefPlacement;
     CUGRSetting cugrSetting;
     outputFileName = TIMESTAMP + "/" + "cugr_congestion.txt";  // From cugr
-    command = "./iccad19gr -lef " + io::IOModule::LefCell + " -def " + tmpOutputDef + " -output " + TIMESTAMP + "/" +
+    command = "./iccad19gr -lef " + string("") + " -def " + tmpOutputDef + " -output " + TIMESTAMP + "/" +
               "tmp.guide -threads " + to_string(cugrSetting.threads) + " -rrrIters " +
               to_string(cugrSetting.iterations) + " -cgmap " + outputFileName;
 

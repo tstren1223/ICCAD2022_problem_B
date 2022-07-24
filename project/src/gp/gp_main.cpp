@@ -47,70 +47,80 @@ void gp_main()
 
 void merge_lower_bound(int &initIter, NetModel &initNetModel, NetModel &mainNetModel, bool init, double pnWeightBegin = 0, double pnWeightEnd = 0, int iter = 0, int mainIter = 0, int LBIter = 0)
 {
+    bool sep = false;
+    if (!sep)
+    {
+        int pins = io::IOModule::pins;
+        int cells = io::IOModule::cells;
+        int nets = io::IOModule::nets;
+        if (io::IOModule::pid > 0) // bottom
+        {
+            for (int i = 0; i < io::IOModule::bott_c; i++)
+            {
+                io::IOModule::shared_memx[io::IOModule::die_to_g[i]] = cellX[i];
+                io::IOModule::shared_memy[io::IOModule::die_to_g[i]] = cellY[i];
+                // cout<<"(GB)Put"<<i<<"to "<<io::IOModule::die_to_g[i]<<endl;
+            }
+            sem_wait(io::IOModule::data_ready);
 
-    int pins = io::IOModule::pins;
-    int cells = io::IOModule::cells;
-    int nets = io::IOModule::nets;
-    if (io::IOModule::pid > 0) // bottom
-    {
-        for (int i = 0; i < io::IOModule::bott_c; i++)
-        {
-            io::IOModule::shared_memx[io::IOModule::die_to_g[i]] = cellX[i];
-            io::IOModule::shared_memy[io::IOModule::die_to_g[i]] = cellY[i];
-            //cout<<"(GB)Put"<<i<<"to "<<io::IOModule::die_to_g[i]<<endl;
-        }
-        sem_wait(io::IOModule::data_ready);
-        
-        vector<double> cellX2, cellY2;
-        for (int i = 0; i < cells; i++)
-        {
-            cellX2.push_back(io::IOModule::shared_memx[i]);
-            cellY2.push_back(io::IOModule::shared_memy[i]);
-        }
-        if (init)
-            lowerBound(0.001, 0.0, initIter, LBModeFenceBBox, initNetModel, 0.0, -1, cellX2, cellY2, pins, cells, nets, io::IOModule::netCells);
-        else
-            lowerBound(0.001, pnWeightBegin + (pnWeightEnd - pnWeightBegin) * (iter - 1) / (mainIter - 1), LBIter, LBModeFenceRelax, mainNetModel, 0.0, -1, cellX2, cellY2, pins, cells, nets, io::IOModule::netCells);
-        for (int i = 0; i < cells; i++)
-        {
-            io::IOModule::shared_memx[i] = cellX2[i];
-            io::IOModule::shared_memy[i] = cellY2[i];
-        }
-        sem_post(io::IOModule::end_of_LB);
-        for (int i = 0; i < cells; i++)
-        {
-            if (io::IOModule::g_to_die[i].first == 1)
+            vector<double> cellX2, cellY2;
+            for (int i = 0; i < cells; i++)
             {
-                cellX[io::IOModule::g_to_die[i].second] = io::IOModule::shared_memx[i];
-                cellY[io::IOModule::g_to_die[i].second] = io::IOModule::shared_memy[i];
-                //cout<<"(PB)Put"<<i<<"to "<<io::IOModule::g_to_die[i].second<<endl;
+                cellX2.push_back(io::IOModule::shared_memx[i]);
+                cellY2.push_back(io::IOModule::shared_memy[i]);
+            }
+            if (init)
+                lowerBound(0.001, 0.0, initIter, LBModeFenceBBox, initNetModel, 0.0, -1, cellX2, cellY2, pins, cells, nets, io::IOModule::netCells);
+            else
+                lowerBound(0.001, pnWeightBegin + (pnWeightEnd - pnWeightBegin) * (iter - 1) / (mainIter - 1), LBIter, LBModeFenceRelax, mainNetModel, 0.0, -1, cellX2, cellY2, pins, cells, nets, io::IOModule::netCells);
+            for (int i = 0; i < cells; i++)
+            {
+                io::IOModule::shared_memx[i] = cellX2[i];
+                io::IOModule::shared_memy[i] = cellY2[i];
+            }
+            sem_post(io::IOModule::end_of_LB);
+            for (int i = 0; i < cells; i++)
+            {
+                if (io::IOModule::g_to_die[i].first == 1)
+                {
+                    cellX[io::IOModule::g_to_die[i].second] = io::IOModule::shared_memx[i];
+                    cellY[io::IOModule::g_to_die[i].second] = io::IOModule::shared_memy[i];
+                    // cout<<"(PB)Put"<<i<<"to "<<io::IOModule::g_to_die[i].second<<endl;
+                }
+            }
+            cellX2.clear();
+            cellY2.clear();
+        }
+        else if (io::IOModule::pid == 0) // top
+        {
+            for (int i = 0; i < io::IOModule::top_c; i++)
+            {
+                io::IOModule::shared_memx[io::IOModule::die_to_g[i]] = cellX[i];
+                io::IOModule::shared_memy[io::IOModule::die_to_g[i]] = cellY[i];
+                // cout<<"(GT)Put"<<i<<"to "<<io::IOModule::die_to_g[i]<<endl;
+            }
+            // cout<<"TOP ready"<<endl;
+            sem_post(io::IOModule::data_ready);
+            // cout<<"TOP wait"<<endl;
+            sem_wait(io::IOModule::end_of_LB);
+            // cout<<"GOT!!"<<endl;
+            for (int i = 0; i < cells; i++)
+            {
+                if (io::IOModule::g_to_die[i].first == 0)
+                {
+                    cellX[io::IOModule::g_to_die[i].second] = io::IOModule::shared_memx[i];
+                    cellY[io::IOModule::g_to_die[i].second] = io::IOModule::shared_memy[i];
+                    // cout<<"(PT)Put"<<i<<"to "<<io::IOModule::g_to_die[i].second<<endl;
+                }
             }
         }
-        cellX2.clear();
-        cellY2.clear();
     }
-    else if (io::IOModule::pid == 0) // top
+    else
     {
-        for (int i = 0; i < io::IOModule::top_c; i++)
-        {
-            io::IOModule::shared_memx[io::IOModule::die_to_g[i]] = cellX[i];
-            io::IOModule::shared_memy[io::IOModule::die_to_g[i]] = cellY[i];
-            //cout<<"(GT)Put"<<i<<"to "<<io::IOModule::die_to_g[i]<<endl;
-        }
-        //cout<<"TOP ready"<<endl;
-        sem_post(io::IOModule::data_ready);
-        //cout<<"TOP wait"<<endl;
-        sem_wait(io::IOModule::end_of_LB);
-        //cout<<"GOT!!"<<endl;
-        for (int i = 0; i < cells; i++)
-        {
-            if (io::IOModule::g_to_die[i].first == 0)
-            {
-                cellX[io::IOModule::g_to_die[i].second] = io::IOModule::shared_memx[i];
-                cellY[io::IOModule::g_to_die[i].second] = io::IOModule::shared_memy[i];
-                //cout<<"(PT)Put"<<i<<"to "<<io::IOModule::g_to_die[i].second<<endl;
-            }
-        }
+        if (init)
+            lowerBound(0.001, 0.0, initIter, LBModeFenceBBox, initNetModel, 0.0, -1, cellX, cellY, numPins, numCells, numNets, io::IOModule::netCells);
+        else
+            lowerBound(0.001, pnWeightBegin + (pnWeightEnd - pnWeightBegin) * (iter - 1) / (mainIter - 1), LBIter, LBModeFenceRelax, mainNetModel, 0.0, -1, cellX, cellY, numPins, numCells, numNets, io::IOModule::netCells);
     }
 }
 void placement()

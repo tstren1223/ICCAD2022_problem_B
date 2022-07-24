@@ -25,7 +25,9 @@ pid_t IOModule::pid=0;
 int IOModule::pins=0;
 int IOModule::cells=0;
 int IOModule::nets=0;
-
+std::string IOModule::DefFloorplan;
+std::string IOModule::DefCell;
+std::string IOModule::DefPlacement;
 std::vector<std::vector<int>> io::IOModule::netCells;
 std::map<int,int> io::IOModule::die_to_g;
 std::map<int,std::pair<int,int>> io::IOModule::g_to_die;
@@ -37,15 +39,9 @@ void IOModule::showOptions() const
     printlog(LOG_INFO, "bookshelfAux        : %s", IOModule::BookshelfAux.c_str());
     printlog(LOG_INFO, "bookshelfPl         : %s", IOModule::BookshelfPl.c_str());
     printlog(LOG_INFO, "bookshelfVariety    : %s", IOModule::BookshelfVariety.c_str());
-    printlog(LOG_INFO, "lefTech             : %s", IOModule::LefTech.c_str());
-    printlog(LOG_INFO, "lefCell             : %s", IOModule::LefCell.c_str());
     printlog(LOG_INFO, "defFloorplan        : %s", IOModule::DefFloorplan.c_str());
     printlog(LOG_INFO, "defCell             : %s", IOModule::DefCell.c_str());
     printlog(LOG_INFO, "defPlacement        : %s", IOModule::DefPlacement.c_str());
-    printlog(LOG_INFO, "verilog             : %s", IOModule::Verilog.c_str());
-    printlog(LOG_INFO, "liberty             : %s", IOModule::Liberty.c_str());
-    printlog(LOG_INFO, "size                : %s", IOModule::Size.c_str());
-    printlog(LOG_INFO, "constraints         : %s", IOModule::Constraints.c_str());
 }
 
 bool io::IOModule::load()

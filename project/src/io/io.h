@@ -21,6 +21,9 @@ public:
     static std::string BookshelfPl;
     static std::string BookshelfVariety;
     static std::string BookshelfPlacement;
+    static std::string DefFloorplan;
+    static std::string DefCell;
+    static std::string DefPlacement;
     
     //ICCAD2022
     static bool load_place;
