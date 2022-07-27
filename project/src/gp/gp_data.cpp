@@ -78,7 +78,7 @@ vector<db::Cell *> cellDBMap;
 map<db::Cell *, int> dbCellMap;
 void gp_copy_layout_in()
 {
-    double scale = 1.0 / (double)database.siteW;
+    double scale = 1.0 ;
     map<db::Region *, int> dbRegionMap;
     map<db::IOPin *, int> dbIOPinMap;
     numNodes = 0;
@@ -273,7 +273,7 @@ void gp_copy_layout_in()
 
 void gp_copy_place_in()
 {
-    double scale = 1.0 / (double)database.siteW;
+    double scale = 1.0 ;
     for (int i = 0; i < numCells; i++)
     {
         db::Cell *cell = cellDBMap[i];
@@ -284,7 +284,7 @@ void gp_copy_place_in()
 
 void gp_copy_out()
 {
-    double scale = database.siteW;
+    double scale = 1;
     for (int i = 0; i < numCells; i++)
     {
         db::Cell *cell = cellDBMap[i];

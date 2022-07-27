@@ -3,18 +3,19 @@
 #include "../db/db.h"
 #include "../global.h"
 #include "io.h"
+#include<algorithm>
 #include "bits/stdc++.h"
 using namespace db;
 #include <sys/wait.h>
-#include<sys/shm.h>
+#include <sys/shm.h>
 #include <unistd.h>
 // ICCAD2022
 int _scale = 0;
 
 pid_t pid;
-int shmid,shmid2,shmid3,shmid4;
-std::map<int,int> top_to_g;
-std::map<int,int> bottom_to_g;
+int shmid, shmid2, shmid3, shmid4;
+std::map<int, int> top_to_g;
+std::map<int, int> bottom_to_g;
 class Tech
 {
 public:
@@ -140,8 +141,8 @@ public:
     vector<string> net_name;
     vector<vector<string>> net_cell_name;
     vector<vector<string>> net_pin_name;
-    map<string, int> cell_inst_map; // from typename to index
-    vector<Die_infro *> cell_inst_die;        // 0 for top,1 for bottom
+    map<string, int> cell_inst_map;    // from typename to index
+    vector<Die_infro *> cell_inst_die; // 0 for top,1 for bottom
     vector<int> cell_inst_size;
     class FM
     {
@@ -488,7 +489,7 @@ public:
     }
     pair<int, int> pin_result(int i, int j)
     {
-        
+
         if (cell_xy.find(net_cell_name[i][j]) == cell_xy.end() || cell_inst_map.find(net_cell_name[i][j]) == cell_inst_map.end())
         {
             cerr << "Error to find pin result with cell_name:" << net_cell_name[i][j] << endl;
@@ -962,24 +963,31 @@ public:
         }
         return true;
     }
-    long long GP_2die_analyze(string top_name,string bottom_name){
+    struct cell{
+        long long lx,ly,hx,hy;
+    };
+    long long GP_2die_analyze(string top_name, string bottom_name)
+    {
         ifstream top_file(top_name);
         ifstream bottom_file(bottom_name);
-        if (!top_file.good()||!bottom_file.good())
+        if (!top_file.good() || !bottom_file.good())
         {
-            printlog(LOG_ERROR, "cannot open file: %s or %s", top_name.c_str(),bottom_name.c_str());
+            printlog(LOG_ERROR, "cannot open file: %s or %s", top_name.c_str(), bottom_name.c_str());
             return -1;
         }
-        long long cellX[cell_inst_num],cellY[cell_inst_num];
+        long long cellX[cell_inst_num], cellY[cell_inst_num];
+        vector<cell> cells;
         long long hpwl = 0;
         string name;
-        while(top_file>>name){
-            int encoding=cell_inst_map[name];
-            top_file>>cellX[encoding]>>cellY[encoding];
+        while (top_file >> name)
+        {
+            int encoding = cell_inst_map[name];
+            top_file >> cellX[encoding] >> cellY[encoding];
         }
-        while(bottom_file>>name){
-            int encoding=cell_inst_map[name];
-            bottom_file>>cellX[encoding]>>cellY[encoding];
+        while (bottom_file >> name)
+        {
+            int encoding = cell_inst_map[name];
+            bottom_file >> cellX[encoding] >> cellY[encoding];
         }
         for (int i = 0; i < net_num; i++)
         {
@@ -1003,8 +1011,8 @@ public:
                 tpName.append(tname);
                 tpName.append(":");
                 tpName.append(net_pin_name[i][j]);
-                pair<int, int> pin_xy = make_pair(cellX[cell_index],cellY[cell_index]);
-                Tech *tech = die?bottom.tech:top.tech;
+                pair<int, int> pin_xy = make_pair(cellX[cell_index], cellY[cell_index]);
+                Tech *tech = die ? bottom.tech : top.tech;
                 int type_index = tech->typeMap[tname];
                 int pin_index = tech->typePinMap[tpName];
                 pin_xy.first += tech->typePinX[type_index][pin_index];
@@ -1045,7 +1053,45 @@ public:
             else
                 hpwl += (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
         }
+        for(int i=0;i<cell_inst_num;i++){
+            cell d;
+            d.lx=cellX[i];
+            d.ly=cellY[i];
+            d.hx=d.lx+cell_wh(cName[i]).first;
+            d.hy=d.ly+cell_wh(cName[i]).second;
+            cells.push_back(d);
+        }
+        check_overlap(cells);
         return hpwl;
+    }
+    void check_overlap(vector<cell> &cells)
+    {
+        int nError = 0;
+        sort(cells.begin(), cells.end(), [](const cell &a, const cell &b)
+             { return a.lx < b.lx; });
+        int nCells = cells.size();
+        for (int i = 0; i < nCells; i++)
+        {
+            cell cell_i = cells[i];
+            // int lx = cell_i->x;
+            int hx = cell_i.hx;
+            int ly = cell_i.ly;
+            int hy = cell_i.hy;
+            for (int j = i + 1; j < nCells; j++)
+            {
+                cell cell_j = cells[j];
+                if (cell_j.lx >= hx)
+                {
+                    break;
+                }
+                if (cell_j.ly >= hy || cell_j.hy <= ly)
+                {
+                    continue;
+                }
+                nError++;
+            }
+        }
+        printlog(LOG_INFO, "(GP)total #overlap=%d", nError);
     }
 };
 Instance global_inst;
@@ -1392,29 +1438,30 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     printlog(LOG_INFO, "reading iccad2022.");
     readICCAD2022(FILE); // this auxfile should be input txt
     // process top die first
-    io::IOModule::cells=global_inst.cell_inst_num;
-    io::IOModule::nets=global_inst.net_num;
-    io::IOModule::pins=0;
-    shmid=shmget(0,sizeof(double)*io::IOModule::cells,IPC_CREAT|0600);
-    shmid2=shmget(0,sizeof(double)*io::IOModule::cells,IPC_CREAT|0600);
-    shmid3=shmget(0,sizeof(sem_t),IPC_CREAT|0600);
-    shmid4=shmget(0,sizeof(sem_t),IPC_CREAT|0600);
-    io::IOModule::shared_memx=(double*)shmat(shmid,NULL,0);
-    io::IOModule::shared_memy=(double*)shmat(shmid2,NULL,0);
-    io::IOModule::end_of_LB=(sem_t*)shmat(shmid3,NULL,0);
-    io::IOModule::data_ready=(sem_t*)shmat(shmid4,NULL,0);
-    io::IOModule::top_c=top.cell_num;
-    io::IOModule::bott_c=bottom.cell_num;
-    for(int i=0;i<io::IOModule::nets;i++){
-        io::IOModule::pins+=global_inst.net_pin_num[i];
+    io::IOModule::cells = global_inst.cell_inst_num;
+    io::IOModule::nets = global_inst.net_num;
+    io::IOModule::pins = 0;
+    shmid = shmget(0, sizeof(double) * io::IOModule::cells, IPC_CREAT | 0600);
+    shmid2 = shmget(0, sizeof(double) * io::IOModule::cells, IPC_CREAT | 0600);
+    shmid3 = shmget(0, sizeof(sem_t), IPC_CREAT | 0600);
+    shmid4 = shmget(0, sizeof(sem_t), IPC_CREAT | 0600);
+    io::IOModule::shared_memx = (double *)shmat(shmid, NULL, 0);
+    io::IOModule::shared_memy = (double *)shmat(shmid2, NULL, 0);
+    io::IOModule::end_of_LB = (sem_t *)shmat(shmid3, NULL, 0);
+    io::IOModule::data_ready = (sem_t *)shmat(shmid4, NULL, 0);
+    io::IOModule::top_c = top.cell_num;
+    io::IOModule::bott_c = bottom.cell_num;
+    for (int i = 0; i < io::IOModule::nets; i++)
+    {
+        io::IOModule::pins += global_inst.net_pin_num[i];
         io::IOModule::netCells.push_back(vector<int>());
-        for(int j=0;j<global_inst.net_pin_num[i];j++)
+        for (int j = 0; j < global_inst.net_pin_num[i]; j++)
             io::IOModule::netCells[i].push_back(global_inst.cell_inst_map[global_inst.net_cell_name[i][j]]);
     }
     sem_init(io::IOModule::end_of_LB, 1, 0);
     sem_init(io::IOModule::data_ready, 1, 0);
     pid = fork();
-    io::IOModule::pid=pid;
+    io::IOModule::pid = pid;
     if (pid == -1)
     {
         cerr << "fork error";
@@ -1422,16 +1469,16 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     else if (pid == 0)
     {
         io::IOModule::TOP = true;
-        io::IOModule::die_to_g=top_to_g;
+        io::IOModule::die_to_g = top_to_g;
     }
     else
     {
         io::IOModule::ANS = true;
-        io::IOModule::die_to_g=bottom_to_g;
+        io::IOModule::die_to_g = bottom_to_g;
     }
     if (io::IOModule::load_place)
         return true;
-    
+
     if (io::IOModule::TOP || !io::IOModule::ANS)
         bsData.load_Die(top);
     else
@@ -1452,6 +1499,7 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     {
         // database.scale = 1;
     }
+    _scale = 1;
     bsData.scaleData(_scale);
     database.clear();
     database.dieLX = INT_MAX;
@@ -1464,7 +1512,7 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
         Row *row = database.addRow("core_SITE_ROW_" + to_string(i), "core", bsData.rowX[i], bsData.rowY[i]);
         row->xStep(bsData.siteWidth);
         row->yStep(bsData.siteHeight);
-        row->xNum(bsData.rowSites[i]);
+        row->xNum(bsData.rowSites[i]*_scale/bsData.siteWidth);
         row->yNum(1);
         row->flip((i % 2) == 1);
         database.dieLX = std::min(database.dieLX, row->x());
@@ -1844,13 +1892,15 @@ bool Database::readICCAD2022(const std::string &in_filename)
         (now_tech) = global_inst.cell_inst_die[cell_encoding]->tech;
         int typeID = (*now_tech).typeMap[global_inst.type_name[cell_encoding]];
         int cellID = (*now_tech).nCells++;
-        if(now_tech==top.tech){
-            top_to_g[cellID]=cell_encoding;
-            io::IOModule::g_to_die[cell_encoding]=make_pair(0,cellID);
+        if (now_tech == top.tech)
+        {
+            top_to_g[cellID] = cell_encoding;
+            io::IOModule::g_to_die[cell_encoding] = make_pair(0, cellID);
         }
-        else if(now_tech==bottom.tech){
-            bottom_to_g[cellID]=cell_encoding;
-            io::IOModule::g_to_die[cell_encoding]=make_pair(1,cellID);
+        else if (now_tech == bottom.tech)
+        {
+            bottom_to_g[cellID] = cell_encoding;
+            io::IOModule::g_to_die[cell_encoding] = make_pair(1, cellID);
         }
         if ((*now_tech).cellMap.find(global_inst.cName[cell_encoding]) != (*now_tech).cellMap.end())
         {
@@ -1938,24 +1988,25 @@ bool Database::writeICCAD2022(const std::string &file)
     {
         if (io::IOModule::GP_check)
         {
-            io::IOModule::GP_check=false;
+            io::IOModule::GP_check = false;
             global_inst.write_GP_result("gp_top.txt");
             return true;
         }
         else
         {
             waitpid(pid, NULL, WUNTRACED);
-            cout<<"Semaphore1:"<<sem_destroy(io::IOModule::data_ready)<<endl;
-            cout<<"Semaphore2:"<<sem_destroy(io::IOModule::end_of_LB)<<endl;
-            cout<<"S_mem1:"<<shmctl(shmid,IPC_RMID,NULL)<<endl;
-            cout<<"S_mem2:"<<shmctl(shmid2,IPC_RMID,NULL)<<endl;
-            cout<<"S_mem3:"<<shmctl(shmid3,IPC_RMID,NULL)<<endl;
-            cout<<"S_mem4:"<<shmctl(shmid4,IPC_RMID,NULL)<<endl;
+            cout << "Semaphore1:" << sem_destroy(io::IOModule::data_ready) << endl;
+            cout << "Semaphore2:" << sem_destroy(io::IOModule::end_of_LB) << endl;
+            cout << "S_mem1:" << shmctl(shmid, IPC_RMID, NULL) << endl;
+            cout << "S_mem2:" << shmctl(shmid2, IPC_RMID, NULL) << endl;
+            cout << "S_mem3:" << shmctl(shmid3, IPC_RMID, NULL) << endl;
+            cout << "S_mem4:" << shmctl(shmid4, IPC_RMID, NULL) << endl;
             cout << "wait ending" << endl;
         }
     }
-    else if(io::IOModule::GP_check){
-        io::IOModule::GP_check=false;
+    else if (io::IOModule::GP_check)
+    {
+        io::IOModule::GP_check = false;
         global_inst.write_GP_result("gp_bottom.txt");
         return true;
     }
@@ -1977,8 +2028,8 @@ bool Database::writeICCAD2022(const std::string &file)
             }
         }
         global_inst.write_Place_result(io::IOModule::TOP, "top.txt");
-        //cout<<"Semaphore1:"<<sem_destroy(io::IOModule::data_ready)<<endl;
-        //cout<<"Semaphore2:"<<sem_destroy(io::IOModule::end_of_LB)<<endl;
+        // cout<<"Semaphore1:"<<sem_destroy(io::IOModule::data_ready)<<endl;
+        // cout<<"Semaphore2:"<<sem_destroy(io::IOModule::end_of_LB)<<endl;
         shmdt(io::IOModule::end_of_LB);
         shmdt(io::IOModule::data_ready);
         shmdt(io::IOModule::shared_memx);
@@ -2016,15 +2067,18 @@ bool Database::writeICCAD2022(const std::string &file)
         printlog(LOG_INFO, "Terminal Insersion is over");
         // Analyze for HPWL
         long long r;
-        printlog(LOG_INFO, "(GP)Total HPWL for 2 dies: %lld", r=global_inst.GP_2die_analyze("gp_top.txt","gp_bottom.txt"));
-        printlog(LOG_INFO, "(DP)Total HPWL for 2 dies: %lld", r=global_inst.getCost());
-        if(io::IOModule::statics){
-            ofstream out_file("statics.txt",std::ios_base::app|std::ios_base::out);
+        printlog(LOG_INFO, "(GP)Total HPWL for 2 dies: %lld", r = global_inst.GP_2die_analyze("gp_top.txt", "gp_bottom.txt"));
+        printlog(LOG_INFO, "(DP)Total HPWL for 2 dies: %lld", r = global_inst.getCost());
+        if (io::IOModule::statics)
+        {
+            ofstream out_file("statics.txt", std::ios_base::app | std::ios_base::out);
             if (!out_file.good())
             {
                 printlog(LOG_ERROR, "cannot open file: %s", "statics.txt");
-            }else{
-                out_file<<r<<endl;
+            }
+            else
+            {
+                out_file << r << endl;
             }
             out_file.close();
         }

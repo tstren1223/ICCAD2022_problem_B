@@ -294,7 +294,7 @@ void DPlacer::input() {
     coreLY = 0;
     coreHX = (dbHX - dbLX) / siteW;
     coreHY = (dbHY - dbLY) / siteH;
-
+    cout<<coreHX<<endl;
     nRegions = database.getNumRegions();
     binW = siteH / siteW * 9;
     binH = 9;

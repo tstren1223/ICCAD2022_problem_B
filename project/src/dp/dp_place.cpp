@@ -37,10 +37,8 @@ void DPlacer::setupFlow(const std::string &name)
         // flow for wirelength-driven DP
         flow.addStage("PM", DPStage::Technique::Premove, 1);
         flow.addStage("LG", DPStage::Technique::Legalize, DPModule::MaxLGIter);
-        flow.addStage("NF", DPStage::Technique::GlobalNF, 1);
-        //flow.addStage("GM", DPStage::Technique::GlobalMove, DPModule::MaxGMIter);
-        //flow.addStage("LM", DPStage::Technique::LocalMove, DPModule::MaxLMIter);
-        //flow.addStage("NF", DPStage::Technique::GlobalNF, 1);
+        flow.addStage("GM", DPStage::Technique::GlobalMove, DPModule::MaxGMIter);
+        flow.addStage("LM", DPStage::Technique::LocalMove, DPModule::MaxLMIter);
     }
     else if (name == "DispDriven")
     {
@@ -457,6 +455,7 @@ unsigned DPlacer::legalizeCell(const int threshold, const unsigned iThread)
                 Region oRegion = cell->getOriginalRegion(MLLLocalRegionW, MLLLocalRegionH);
 
                 assert(oRegion.area());
+                #ifdef LEGALIZE_REGION_SHIFT_TOWARDS_OPTIMAL_REGION
                 Region optimalRegion = cell->getOptimalRegion();
                 optimalRegion.hx += cell->w;
                 optimalRegion.hy += cell->h;
@@ -466,6 +465,7 @@ unsigned DPlacer::legalizeCell(const int threshold, const unsigned iThread)
                 targetX = max(oRegion.lx, min(targetX, oRegion.hx));
                 targetY = max(oRegion.ly, min(targetY, oRegion.hy));
                 oRegion.shift(targetX - oRegion.cx(), targetY - oRegion.cy());
+                #endif
                 if (oRegion.independent(operatingRegions))
 
                 {

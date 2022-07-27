@@ -1,0 +1,7 @@
+{
+    "makefile.extensionOutputFolder": "./.vscode",
+    "files.associations": {
+        "*.inc": "asp",
+        "iosfwd": "cpp"
+    }
+}

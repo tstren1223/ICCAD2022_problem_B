@@ -179,7 +179,7 @@ bool writeComponents(ofstream& ofs) {
         db::Cell* cell = database.cells[i];
         int x = 0;
         int y = 0;
-        double scale = database.siteW;
+        double scale = 1;
         if (cell->fixed()) {
             x = cell->lx();
             y = cell->ly();

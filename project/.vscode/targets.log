@@ -1,0 +1,310 @@
+make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 3.82.90
+# Built for i686-pc-mingw32
+# Copyright (C) 1988-2012 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
+
+# Make data base, printed on Sun Jul 24 17:01:57 2022
+
+# Variables
+
+# automatic
+<D = $(patsubst %/,%,$(patsubst %\,%,$(dir $<)))
+# automatic
+?F = $(notdir $?)
+# default
+.SHELLFLAGS := -c
+# makefile
+MAKEFLAGS = Rrqp
+# automatic
+?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
+# automatic
+@D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
+# environment
+HOMEDRIVE = C:
+# automatic
+@F = $(notdir $@)
+# automatic
+^D = $(patsubst %/,%,$(patsubst %\,%,$(dir $^)))
+# makefile
+CURDIR := c:/Users/tstre/OneDrive/�ୱ/project/project
+# default
+SHELL := sh.exe
+# environment
+WINDIR = C:\WINDOWS
+# environment
+VSCODE_NLS_CONFIG = {"locale":"zh-tw","availableLanguages":{"*":"zh-tw"},"_languagePackId":"a0b772d00248b7f5c117cab9736199be.zh-tw","_translationsConfigFile":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\a0b772d00248b7f5c117cab9736199be.zh-tw\\tcf.json","_cacheRoot":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\a0b772d00248b7f5c117cab9736199be.zh-tw","_resolvedLanguagePackCoreLocation":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\a0b772d00248b7f5c117cab9736199be.zh-tw\\3b889b090b5ad5793f524b5d1d39fda662b96a2a","_corruptedFile":"C:\\Users\\tstre\\AppData\\Roaming\\Code\\clp\\a0b772d00248b7f5c117cab9736199be.zh-tw\\corrupted.info","_languagePackSupport":true}
+# environment
+VBOX_MSI_INSTALL_PATH = C:\Program Files\Oracle\VirtualBox\
+# environment
+ONEDRIVE = C:\Users\tstre\OneDrive
+# environment
+PATHEXT = .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+# makefile
+MAKEFILE_LIST := 
+# environment
+FPS_BROWSER_USER_PROFILE_STRING = Default
+# environment
+TMP = C:\Users\tstre\AppData\Local\Temp
+# environment
+PATH_TO_FX = C:\Program Files\Java\javafx-sdk-17.0.2\lib
+# environment
+PROGRAMW6432 = C:\Program Files
+# environment
+PROGRAMDATA = C:\ProgramData
+# environment
+VSCODE_CWD = C:\Users\tstre\OneDrive\�ୱ\project\project
+# environment
+PATH = C:\Program Files\Eclipse Adoptium\jdk-17.0.3.7-hotspot\bin;C:\Program Files\Java\jdk-17.0.2\bin;C:\MinGW\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\LLVM\bin;C:\Program Files\Intel\WiFi\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\Program Files\Go\bin;C:\GnuWin32\bin;C:\GnuWin32\bin\bison.exe;C:\GnuWin32\bin\flex.exe;C:\Program Files\Git\cmd;C:\Program Files\Git LFS;C:\Program Files\dotnet\;C:\Qt\6.3.1\mingw_64\bin;C:\Users\tstre\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\tstre\AppData\Local\Programs\Python\Python310\;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\tstre\AppData\Local\Microsoft\WindowsApps;C:\Users\tstre\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\tstre\go\bin;C:\GnuWin32\bin;C:\GnuWin32\bin\bison.exe;C:\GnuWin32\bin\flex.exe;C:\Users\tstre\AppData\Local\GitHubDesktop\bin;C:\Users\tstre\.dotnet\tools
+# environment
+COMMONPROGRAMW6432 = C:\Program Files\Common Files
+# environment
+ZES_ENABLE_SYSMAN = 1
+# environment
+GIT_LFS_PATH = C:\Program Files\Git LFS
+# environment
+PROCESSOR_ARCHITECTURE = x86
+# environment
+USERPROFILE = C:\Users\tstre
+# environment
+ALLUSERSPROFILE = C:\ProgramData
+# environment
+GOPATH = C:\Users\tstre\go
+# environment
+SOPC_KIT_NIOS2 = D:\Quartus2\nios2eds
+# environment
+NUMBER_OF_PROCESSORS = 8
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# environment
+QT = C:\QT\6.3.0\msvc2019_64\bin
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver
+# automatic
+%F = $(notdir $%)
+# environment
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_16796_QMDTHSWKPIVUHRUM
+# environment
+COMPUTERNAME = DESKTOP-R0LBQQO
+# environment
+PROGRAMFILES = C:\Program Files (x86)
+# environment
+DRIVERDATA = C:\Windows\System32\Drivers\DriverData
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = undefined
+# environment
+USERNAME = tstre
+# environment
+PUBLIC = C:\Users\Public
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+# environment
+VSCODE_CODE_CACHE_PATH = C:\Users\tstre\AppData\Roaming\Code\CachedData\3b889b090b5ad5793f524b5d1d39fda662b96a2a
+# environme 
+nt
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+# environment
+COMMONPROGRAMFILES = C:\Program Files (x86)\Common Files
+# environment
+LOGONSERVER = \\DESKTOP-R0LBQQO
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# environment
+USERDOMAIN = DESKTOP-R0LBQQO
+# environment
+MAKELEVEL := 0
+# default
+MAKE = $(MAKE_COMMAND)
+# default
+MAKECMDGOALS := all
+# default
+MAKE_VERSION := 3.82.90
+# makefile
+.DEFAULT_GOAL := 
+# environment
+CLASSPATH = .;
+# environment
+PROGRAMFILES(X86) = C:\Program Files (x86)
+# automatic
+%D = $(patsubst %/,%,$(patsubst %\,%,$(dir $%)))
+# environment
+LOCALAPPDATA = C:\Users\tstre\AppData\Local
+# environment
+PSMODULEPATH = C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
+# default
+MAKE_COMMAND := make.exe
+# environment
+PROCESSOR_ARCHITEW6432 = AMD64
+# default
+.VARIABLES := 
+# automatic
+*F = $(notdir $*)
+# environment
+PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 142 Stepping 10, GenuineIntel
+# environment
+OS = Windows_NT
+# environment
+VSCODE_IPC_HOOK = \\.\pipe\01317d538d75217dee263d604633d4c3-1.69.2-main-sock
+# environment
+HOMEPATH = \Users\tstre
+# environment
+COMMONPROGRAMFILES(X86) = C:\Program Files (x86)\Common Files
+# environment
+PROMPT = $P$G
+# environment
+MFLAGS = -Rrqp
+# automatic
+*D = $(patsubst %/,%,$(patsubst %\,%,$(dir $*)))
+# environment
+SYSTEMROOT = C:\WINDOWS
+# automatic
++D = $(patsubst %/,%,$(patsubst %\,%,$(dir $+)))
+# automatic
++F = $(notdir $+)
+# environment
+APPDATA = C:\Users\tstre\AppData\Roaming
+# environment
+TEMP = C:\Users\tstre\AppData\Local\Temp
+# environment
+COMSPEC = C:\WINDOWS\system32\cmd.exe
+# default
+MAKEFILES := 
+# environment
+QUARTUS_ROOTDIR = D:\Quartus2\quartus
+# automatic
+<F = $(notdir $<)
+# environment
+LC_ALL = C
+# automatic
+^F = $(notdir $^)
+# default
+SUFFIXES := 
+# environment
+SYSTEMDRIVE = C:
+# environment
+SESSIONNAME = Console
+# environment
+PROCESSOR_REVISION = 8e0a
+# default
+.INCLUDE_DIRS = C:/MinGW/include
+# default
+.RECIPEPREFIX := 
+# environment
+LANG = C
+# environment
+PROCESSOR_LEVEL = 6
+# environment
+FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
+# environment
+VSCODE_PID = 16796
+# environment
+USERDOMAIN_ROAMINGPROFILE = DESKTOP-R0LBQQO
+# variable set hash-table stats:
+# Load=95/1024=9%, Rehash=0, Collisions=11/111=10%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# C:\Qt\6.3.1\mingw_64\bin (key C:/Qt/6.3.1/mingw_64/bin, mtime 1655882352): 342 files, no impossibilities.
+# C:\Program Files\Intel\WiFi\bin\ (key C:/Program Files/Intel/WiFi/bin/, mtime 1651335197): 28 files, no impossibilities.
+# C:\Program Files\Common Files\Intel\WirelessCommon\ (key C:/Program Files/Common Files/Intel/WirelessCommon/, mtime 1651335182): 6 files, no impossibilities.
+# C:\WINDOWS\System32\WindowsPowerShell\v1.0\ (key C:/WINDOWS/System32/WindowsPowerShell/v1.0/, mtime 1651040709): 31 files, no impossibilities.
+# C:\Users\tstre\go\bin (key C:/Users/tstre/go/bin, mtime 1655737079): 3 files, no impossibilities.
+# . (key c:/Users/tstre/OneDrive/�ୱ/project/project, mtime 1658653313): 9 files, no impossibilities.
+# C:\Program Files\Git LFS (key C:/Program Files/Git LFS, mtime 1655548552): 5 files, no impossibilities.
+# C:\Program Files\MySQL\MySQL Shell 8.0\bin\ (key C:/Program Files/MySQL/MySQL Shell 8.0/bin/, mtime 1650897397): 9 files, no impossibilities.
+# C:\Program Files\Git\cmd (key C:/Program Files/Git/cmd, mtime 1652253985): 8 files, no impossibilities.
+# C:\WINDOWS\System32\OpenSSH\: could not be stat'd.
+# C:\GnuWin32\bin (key C:/GnuWin32/bin, mtime 1651995944): 11 files, no impossibilities.
+# C:\MinGW\bin (key C:/MinGW/bin, mtime 1651994413): 282 files, no impossibilities.
+# C:\WINDOWS (key C:/WINDOWS, mtime 1650899148): 114 files, no impossibilities.
+# C:\Users\tstre\AppData\Local\Microsoft\WindowsApps (key C:/Users/tstre/AppData/Local/Microsoft/WindowsApps, mtime 1658279578): 15 files, no impossibilities.
+# C:\Program Files\LLVM\bin (key C:/Program Files/LLVM/bin, mtime 1651301763): 120 files, no impossibilities.
+# C:\GnuWin32\bin\flex.exe (key C:/GnuWin32/bin/flex.exe, mtime 1081375010): could not be opened.
+# C:\Users\tstre\AppData\Local\GitHubDesktop\bin (key C:/Users/tstre/AppData/Local/GitHubDesktop/bin, mtime 1655551382): 4 files, no impossibilities.
+# C:\Users\tstre\AppData\Local\Programs\Microsoft VS Code\bin (key C:/Users/tstre/AppData/Local/Programs/Microsoft VS Code/bin, mtime 1658279642): 4 files, no impossibilities.
+# C:\Program Files\Go\bin (key C:/Program Files/Go/bin, mtime 1651995117): 4 files, no impossibilities.
+# C:\WINDOWS\System32\Wbem (key C:/WINDOWS/System32/Wbem, mtime 1657904626): 170 files, no impossibilities.
+# C:\Program Files\Java\jdk-17.0.2\bin (key C:/Program Files/Java/jdk-17.0.2/bin, mtime 1650895329): 123 files, no impossibilities.
+# C:\Users\tstre\AppData\Local\Programs\Python\Python310\ (key C:/Users/tstre/AppData/Local/Programs/Python/Python310/, mtime 1652950131): 19 files, no impossibilities.
+# C:\Users\tstre\AppData\Local\Programs\Python\Python310\Scripts\ (key C:/Users/tstre/AppData/Local/Programs/Python/Python310/Scripts/, mtime 1656582043): 17 files, no impossibilities.
+# C:\GnuWin32\bin\bison.exe (key C:/GnuWin32/bin/bison.exe, mtime 1241468228): could not be opened.
+# C:\Program Files\dotnet\ (key C:/Program Files/dotnet/, mtime 1655737296): 13 files, no impossibilities.
+# C:\Program Files\Eclipse Adoptium\jdk-17.0.3.7-hotspot\bin (key C:/Program Files/Eclipse Adoptium/jdk-17.0.3.7-hotspot/bin, mtime 1655739101): 122 files, no impossibilities.
+# C:\WINDOWS\system32 (key C:/WINDOWS/system32, mtime 1658204993): 2893 files, no impossibilities.
+# C:\Users\tstre\.dotnet\tools: could not be stat'd.
+
+# 4352 files, no impossibilities in 28 directories.
+
+# Implicit Rules
+
+# No implicit rules.
+
+# Files
+
+# Not a target:
+all:
+#  Command line target.
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has not been updated.
+
+# Not a target:
+.SUFFIXES:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+Makefile:
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Failed to be updated.
+
+# Not a target:
+makefile:
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Failed to be updated.
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+GNUmakefile:
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has been updated.
+#  Failed to be updated.
+
+# files hash-table stats:
+# Load=6/1024=1%, Rehash=0, Collisions=0/15=0%
+# VPATH Search Paths
+
+# No 'vpath' search paths.
+
+# No general ('VPATH' variable) search path.
+
+# strcache buffers: 8 (7) / strings = 4142 / storage = 63531 B / avg = 15 B
+# current buf: size = 8174 B / used = 6369 B / count = 337 / avg = 18 B
+# other used: total = 55357 B / count = 3805 / avg = 14 B
+# other free: total = 56 B / max = 14 B / min = 3 B / avg = 8 B
+
+# strcache performance: lookups = 4388 / hit rate = 5%
+# hash-table stats:
+# Load=4142/8192=51%, Rehash=0, Collisions=1788/4388=41%
+# Finished Make data base on Sun Jul 24 17:01:57 2022
+
+ 
+make.exe: *** No rule to make target 'all'.  Stop.
+
