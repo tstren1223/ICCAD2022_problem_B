@@ -3,7 +3,7 @@
 #include "../db/db.h"
 #include "../global.h"
 #include "io.h"
-#include<algorithm>
+#include <algorithm>
 #include "bits/stdc++.h"
 using namespace db;
 #include <sys/wait.h>
@@ -614,16 +614,17 @@ public:
                 hpwl += (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
         }
         vector<cell> cells;
-        for(int i=0;i<cell_inst_num;i++){
+        for (int i = 0; i < cell_inst_num; i++)
+        {
             cell d;
-            d.lx=cell_xy[cName[i]].first;
-            d.ly=cell_xy[cName[i]].second;
-            d.hx=d.lx+cell_wh(cName[i]).first;
-            d.hy=d.ly+cell_wh(cName[i]).second;
-            d.encoding=i;
+            d.lx = cell_xy[cName[i]].first;
+            d.ly = cell_xy[cName[i]].second;
+            d.hx = d.lx + cell_wh(cName[i]).first;
+            d.hy = d.ly + cell_wh(cName[i]).second;
+            d.encoding = i;
             cells.push_back(d);
         }
-        print_CGMAP(cells,"DP_A");
+        print_CGMAP(cells, "DP_A");
         return hpwl;
     }
     int terminal_grids_check()
@@ -864,27 +865,32 @@ public:
         out_file.close();
         return true;
     }
+    bool write_par()
+    {
+        ofstream out2_file("net.hgr.part.2");
+        if (!out2_file.good())
+        {
+            printlog(LOG_ERROR, "cannot open file: placement_r");
+            return false;
+        }
+        for (int i = 0; i < cell_inst_num; i++)
+        {
+            out2_file << (cell_inst_die[i] == &top ? 0 : 1) << endl;
+        }
+        out2_file.close();
+        return true;
+    }
     bool write_Place_result(bool TOP, string file = "")
     {
+        write_par();
         if (TOP == false)
         {
             ofstream out_file("placement_r");
-            ofstream out2_file("net.hgr.part.2");
             if (!out_file.good())
             {
                 printlog(LOG_ERROR, "cannot open file: placement_r");
                 return false;
             }
-            if (!out2_file.good())
-            {
-                printlog(LOG_ERROR, "cannot open file: placement_r");
-                return false;
-            }
-            for (int i = 0; i < cell_inst_num; i++)
-            {
-                out2_file << (cell_inst_die[i] == &top ? 0 : 1) << endl;
-            }
-            out2_file.close();
             for (int i = 0; i < cell_inst_num; i++)
             {
                 out_file << cell_xy[cName[i]].first << " " << cell_xy[cName[i]].second << endl;
@@ -894,22 +900,11 @@ public:
         else
         {
             ofstream out_file(file);
-            ofstream out2_file("net.hgr.part.2");
             if (!out_file.good())
             {
                 printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
                 return false;
             }
-            if (!out2_file.good())
-            {
-                printlog(LOG_ERROR, "cannot open file: net.hgr.part.2");
-                return false;
-            }
-            for (int i = 0; i < cell_inst_num; i++)
-            {
-                out2_file << (cell_inst_die[i] == &top ? 0 : 1) << endl;
-            }
-            out2_file.close();
             if (file == "top.txt")
                 out_file << top.cell_num << endl;
             else if (file == "all.txt")
@@ -925,13 +920,17 @@ public:
         }
         return true;
     }
+    void load_par()
+    {
+        f.read_net();
+        f.area_adjust();
+        f.ans();
+    }
     bool load_Place_result(bool ANS, string file = "")
     {
         if (ANS == false)
         {
-            f.read_net();
-            f.area_adjust();
-            f.ans();
+            load_par();
             ifstream in_file("placement_r");
             if (!in_file.good())
             {
@@ -951,9 +950,7 @@ public:
         {
             if (file == "all.txt")
             {
-                f.read_net();
-                f.area_adjust();
-                f.ans();
+                load_par();
             }
             ifstream in_file(file);
             if (!in_file.good())
@@ -974,8 +971,9 @@ public:
         }
         return true;
     }
-    struct cell{
-        long long lx,ly,hx,hy;
+    struct cell
+    {
+        long long lx, ly, hx, hy;
         int encoding;
     };
     long long GP_2die_analyze(string top_name, string bottom_name)
@@ -1065,37 +1063,41 @@ public:
             else
                 hpwl += (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
         }
-        for(int i=0;i<cell_inst_num;i++){
+        for (int i = 0; i < cell_inst_num; i++)
+        {
             cell d;
-            d.lx=cellX[i];
-            d.ly=cellY[i];
-            d.hx=d.lx+cell_wh(cName[i]).first;
-            d.hy=d.ly+cell_wh(cName[i]).second;
-            d.encoding=i;
+            d.lx = cellX[i];
+            d.ly = cellY[i];
+            d.hx = d.lx + cell_wh(cName[i]).first;
+            d.hy = d.ly + cell_wh(cName[i]).second;
+            d.encoding = i;
             cells.push_back(d);
         }
         check_overlap(cells);
-        print_CGMAP(cells,"GP_A");
+        print_CGMAP(cells, "GP_A");
         return hpwl;
     }
-    void print_CGMAP(vector<cell> &cells,string file_n){
-        //distribue into 100*100 bins max
-        int length=100;
-        int width=100;
+    void print_CGMAP(vector<cell> &cells, string file_n)
+    {
+        // distribue into 100*100 bins max
+        int length = 100;
+        int width = 100;
         int CGcell[length][width];
         int CGcell_t[length][width];
         int CGcell_b[length][width];
-        for(int i=0;i<length;i++){
-            for(int j=0;j<width;j++){
-                CGcell[i][j]=0;
-                CGcell_t[i][j]=0;
-                CGcell_b[i][j]=0;
+        for (int i = 0; i < length; i++)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                CGcell[i][j] = 0;
+                CGcell_t[i][j] = 0;
+                CGcell_b[i][j] = 0;
             }
         }
-        if(top.height()<length&&bottom.height()<length)
-            length=max(top.height(),bottom.height());
-        if(top.width()<width&&bottom.width()<width)
-            width=max(top.width(),bottom.width());
+        if (top.height() < length && bottom.height() < length)
+            length = max(top.height(), bottom.height());
+        if (top.width() < width && bottom.width() < width)
+            width = max(top.width(), bottom.width());
         for (unsigned int i = 0; i < cells.size(); i++)
         {
             cell cell_i = cells[i];
@@ -1103,71 +1105,80 @@ public:
             int hx = cell_i.hx;
             int ly = cell_i.ly;
             int hy = cell_i.hy;
-            lx=lx*width/cell_inst_die[cell_i.encoding]->width();
-            hx=min(hx*width/cell_inst_die[cell_i.encoding]->width(),(long long)width);
-            ly=ly*length/cell_inst_die[cell_i.encoding]->height();
-            hy=min(hy*length/cell_inst_die[cell_i.encoding]->height(),(long long)length);
-            if(lx==hx)
-                hx+=1;
-            if(ly==hy)
-                hy+=1;
-            for(int j=lx;j<hx;j++){
-                for(int k=ly;k<hy;k++){
+            lx = min(lx * width / cell_inst_die[cell_i.encoding]->width(), (long long)width - 1);
+            hx = min(hx * width / cell_inst_die[cell_i.encoding]->width(), (long long)width);
+            ly = min(ly * length / cell_inst_die[cell_i.encoding]->height(), (long long)length - 1);
+            hy = min(hy * length / cell_inst_die[cell_i.encoding]->height(), (long long)length);
+            if (lx == hx)
+                hx += 1;
+            if (ly == hy)
+                hy += 1;
+            for (int j = lx; j < hx; j++)
+            {
+                for (int k = ly; k < hy; k++)
+                {
                     CGcell[k][j]++;
-                    if(cell_inst_die[cell_i.encoding]==&top){
+                    if (cell_inst_die[cell_i.encoding] == &top)
+                    {
                         CGcell_t[k][j]++;
                     }
-                    else if(cell_inst_die[cell_i.encoding]==&bottom){
+                    else if (cell_inst_die[cell_i.encoding] == &bottom)
+                    {
                         CGcell_b[k][j]++;
                     }
                 }
             }
         }
         system("mkdir -p analyze");
-        ofstream in_file("analyze/"+file_n+"_combined.txt",std::ios_base::out);
+        ofstream in_file("analyze/" + file_n + "_combined.txt", std::ios_base::out);
         if (!in_file.good())
         {
             printlog(LOG_ERROR, "cannot open file: %s", file_n.c_str());
             return;
         }
-        int check=0;
-        for(int i=length-1;i>=0;i--){
-            for(int j=0;j<width;j++){
-                in_file<<CGcell[i][j]<<"\t";
-                check+=CGcell[i][j];
+        int check = 0;
+        for (int i = length - 1; i >= 0; i--)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                in_file << CGcell[i][j] << "\t";
+                check += CGcell[i][j];
             }
-            in_file<<endl;
+            in_file << endl;
         }
-        if(check<cell_inst_num)
-            cout<<"CGcell error!"<<endl;
+        if (check < cell_inst_num)
+            cout << "CGcell error!" << endl;
         in_file.close();
-        in_file.open("analyze/"+file_n+"_top.txt",std::ios_base::out);
+        in_file.open("analyze/" + file_n + "_top.txt", std::ios_base::out);
         if (!in_file.good())
         {
             printlog(LOG_ERROR, "cannot open file: %s", file_n.c_str());
             return;
         }
-        for(int i=length-1;i>=0;i--){
-            for(int j=0;j<width;j++){
-                in_file<<CGcell_t[i][j]<<"\t";
+        for (int i = length - 1; i >= 0; i--)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                in_file << CGcell_t[i][j] << "\t";
             }
-            in_file<<endl;
+            in_file << endl;
         }
         in_file.close();
-        in_file.open("analyze/"+file_n+"_bottom.txt",std::ios_base::out);
+        in_file.open("analyze/" + file_n + "_bottom.txt", std::ios_base::out);
         if (!in_file.good())
         {
-            printlog(LOG_ERROR, "cannot open file: %s",file_n.c_str());
+            printlog(LOG_ERROR, "cannot open file: %s", file_n.c_str());
             return;
         }
-        for(int i=length-1;i>=0;i--){
-            for(int j=0;j<width;j++){
-                in_file<<CGcell_b[i][j]<<"\t";
+        for (int i = length - 1; i >= 0; i--)
+        {
+            for (int j = 0; j < width; j++)
+            {
+                in_file << CGcell_b[i][j] << "\t";
             }
-            in_file<<endl;
+            in_file << endl;
         }
         in_file.close();
-
     }
     void check_overlap(vector<cell> &cells)
     {
@@ -1183,11 +1194,11 @@ public:
             int hx = cell_i.hx;
             int ly = cell_i.ly;
             int hy = cell_i.hy;
-            Die_infro* now=cell_inst_die[cell_i.encoding];
+            Die_infro *now = cell_inst_die[cell_i.encoding];
             for (int j = i + 1; j < nCells; j++)
             {
                 cell cell_j = cells[j];
-                if(cell_inst_die[cell_j.encoding]!=now)
+                if (cell_inst_die[cell_j.encoding] != now)
                     continue;
                 if (cell_j.lx >= hx)
                 {
@@ -1197,15 +1208,17 @@ public:
                 {
                     continue;
                 }
-                if(now==&top){
+                if (now == &top)
+                {
                     tError++;
                 }
-                else if(now==&bottom){
+                else if (now == &bottom)
+                {
                     bError++;
                 }
             }
         }
-        printlog(LOG_INFO, "(GP)total #overlap=%d(top)+%d(bottom)", tError,bError);
+        printlog(LOG_INFO, "(GP)total #overlap=%d(top)+%d(bottom)", tError, bError);
     }
 };
 Instance global_inst;
@@ -1626,7 +1639,7 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
         Row *row = database.addRow("core_SITE_ROW_" + to_string(i), "core", bsData.rowX[i], bsData.rowY[i]);
         row->xStep(bsData.siteWidth);
         row->yStep(bsData.siteHeight);
-        row->xNum(bsData.rowSites[i]*_scale/bsData.siteWidth);
+        row->xNum(bsData.rowSites[i] * _scale / bsData.siteWidth);
         row->yNum(1);
         row->flip((i % 2) == 1);
         database.dieLX = std::min(database.dieLX, row->x());
@@ -1990,12 +2003,12 @@ bool Database::readICCAD2022(const std::string &in_filename)
     if (io::IOModule::load_place == false && io::IOModule::ANS == false)
     {
         global_inst.f.partition();
+        global_inst.write_par();
     }
     else
     {
-        global_inst.load_Place_result(true, "all.txt");
+        global_inst.load_par();
     }
-
     global_inst.f.output_to_global(global_inst);
     printlog(LOG_INFO, "Partition over.");
     // allocate cell instance
@@ -2198,6 +2211,9 @@ bool Database::writeICCAD2022(const std::string &file)
         }
         // output
         global_inst.layout_info();
+
+        global_inst.write_Place_result(false);
+
         if (!global_inst.writeICCAD2022(file))
         {
             printlog(LOG_ERROR, "Output to ICCAD format fails");
