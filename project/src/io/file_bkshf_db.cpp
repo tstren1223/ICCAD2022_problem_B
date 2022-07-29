@@ -613,6 +613,17 @@ public:
             else
                 hpwl += (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
         }
+        vector<cell> cells;
+        for(int i=0;i<cell_inst_num;i++){
+            cell d;
+            d.lx=cell_xy[cName[i]].first;
+            d.ly=cell_xy[cName[i]].second;
+            d.hx=d.lx+cell_wh(cName[i]).first;
+            d.hy=d.ly+cell_wh(cName[i]).second;
+            d.encoding=i;
+            cells.push_back(d);
+        }
+        print_CGMAP(cells,"DP_A");
         return hpwl;
     }
     int terminal_grids_check()
@@ -965,6 +976,7 @@ public:
     }
     struct cell{
         long long lx,ly,hx,hy;
+        int encoding;
     };
     long long GP_2die_analyze(string top_name, string bottom_name)
     {
@@ -1059,14 +1071,100 @@ public:
             d.ly=cellY[i];
             d.hx=d.lx+cell_wh(cName[i]).first;
             d.hy=d.ly+cell_wh(cName[i]).second;
+            d.encoding=i;
             cells.push_back(d);
         }
         check_overlap(cells);
+        print_CGMAP(cells,"GP_A");
         return hpwl;
+    }
+    void print_CGMAP(vector<cell> &cells,string file_n){
+        //distribue into 100*100 bins max
+        int length=100;
+        int width=100;
+        int CGcell[length][width];
+        int CGcell_t[length][width];
+        int CGcell_b[length][width];
+        for(int i=0;i<length;i++){
+            for(int j=0;j<width;j++){
+                CGcell[i][j]=0;
+                CGcell_t[i][j]=0;
+                CGcell_b[i][j]=0;
+            }
+        }
+        if(top.height()<length&&bottom.height()<length)
+            length=max(top.height(),bottom.height());
+        if(top.width()<width&&bottom.width()<width)
+            width=max(top.width(),bottom.width());
+        for (unsigned int i = 0; i < cells.size(); i++)
+        {
+            cell cell_i = cells[i];
+            int lx = cell_i.lx;
+            int hx = cell_i.hx;
+            int ly = cell_i.ly;
+            int hy = cell_i.hy;
+            lx=lx*width/cell_inst_die[cell_i.encoding]->width();
+            hx=min(hx*width/cell_inst_die[cell_i.encoding]->width(),(long long)width);
+            ly=ly*length/cell_inst_die[cell_i.encoding]->height();
+            hy=min(hy*length/cell_inst_die[cell_i.encoding]->height(),(long long)length);
+            for(int j=lx;j<hx;j++){
+                for(int k=ly;k<hy;k++){
+                    CGcell[k][j]++;
+                    if(cell_inst_die[cell_i.encoding]==&top){
+                        CGcell_t[k][j]++;
+                    }
+                    else if(cell_inst_die[cell_i.encoding]==&bottom){
+                        CGcell_b[k][j]++;
+                    }
+                }
+            }
+        }
+        system("mkdir -p analyze");
+        ofstream in_file("analyze/"+file_n+"_combined.txt",std::ios_base::out);
+        if (!in_file.good())
+        {
+            printlog(LOG_ERROR, "cannot open file: %s", file_n.c_str());
+            return;
+        }
+        for(int i=length-1;i>=0;i--){
+            for(int j=0;j<width;j++){
+                in_file<<CGcell[i][j]<<"\t";
+            }
+            in_file<<endl;
+        }
+        in_file.close();
+        in_file.open("analyze/"+file_n+"_top.txt",std::ios_base::out);
+        if (!in_file.good())
+        {
+            printlog(LOG_ERROR, "cannot open file: %s", file_n.c_str());
+            return;
+        }
+        for(int i=length-1;i>=0;i--){
+            for(int j=0;j<width;j++){
+                in_file<<CGcell_t[i][j]<<"\t";
+            }
+            in_file<<endl;
+        }
+        in_file.close();
+        in_file.open("analyze/"+file_n+"_bottom.txt",std::ios_base::out);
+        if (!in_file.good())
+        {
+            printlog(LOG_ERROR, "cannot open file: %s",file_n.c_str());
+            return;
+        }
+        for(int i=length-1;i>=0;i--){
+            for(int j=0;j<width;j++){
+                in_file<<CGcell_b[i][j]<<"\t";
+            }
+            in_file<<endl;
+        }
+        in_file.close();
+
     }
     void check_overlap(vector<cell> &cells)
     {
-        int nError = 0;
+        int tError = 0;
+        int bError = 0;
         sort(cells.begin(), cells.end(), [](const cell &a, const cell &b)
              { return a.lx < b.lx; });
         int nCells = cells.size();
@@ -1077,9 +1175,12 @@ public:
             int hx = cell_i.hx;
             int ly = cell_i.ly;
             int hy = cell_i.hy;
+            Die_infro* now=cell_inst_die[cell_i.encoding];
             for (int j = i + 1; j < nCells; j++)
             {
                 cell cell_j = cells[j];
+                if(cell_inst_die[cell_j.encoding]!=now)
+                    continue;
                 if (cell_j.lx >= hx)
                 {
                     break;
@@ -1088,10 +1189,15 @@ public:
                 {
                     continue;
                 }
-                nError++;
+                if(now==&top){
+                    tError++;
+                }
+                else if(now==&bottom){
+                    bError++;
+                }
             }
         }
-        printlog(LOG_INFO, "(GP)total #overlap=%d", nError);
+        printlog(LOG_INFO, "(GP)total #overlap=%d(top)+%d(bottom)", tError,bError);
     }
 };
 Instance global_inst;
@@ -1989,7 +2095,7 @@ bool Database::writeICCAD2022(const std::string &file)
         if (io::IOModule::GP_check)
         {
             io::IOModule::GP_check = false;
-            global_inst.write_GP_result("gp_top.txt");
+            global_inst.write_GP_result("gp_bottom.txt");
             return true;
         }
         else
@@ -2007,7 +2113,7 @@ bool Database::writeICCAD2022(const std::string &file)
     else if (io::IOModule::GP_check)
     {
         io::IOModule::GP_check = false;
-        global_inst.write_GP_result("gp_bottom.txt");
+        global_inst.write_GP_result("gp_top.txt");
         return true;
     }
     if (io::IOModule::TOP)
