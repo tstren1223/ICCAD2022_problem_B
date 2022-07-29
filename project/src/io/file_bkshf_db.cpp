@@ -1138,6 +1138,8 @@ public:
             }
             in_file<<endl;
         }
+        if(check<cell_inst_num)
+            cout<<"CGcell error!"<<endl;
         in_file.close();
         in_file.open("analyze/"+file_n+"_top.txt",std::ios_base::out);
         if (!in_file.good())
