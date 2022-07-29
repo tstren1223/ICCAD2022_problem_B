@@ -1130,12 +1130,16 @@ public:
             printlog(LOG_ERROR, "cannot open file: %s", file_n.c_str());
             return;
         }
+        int check=0;
         for(int i=length-1;i>=0;i--){
             for(int j=0;j<width;j++){
                 in_file<<CGcell[i][j]<<"\t";
+                check+=CGcell[i][j];
             }
             in_file<<endl;
         }
+        if(check!=cell_inst_num)
+            cout<<"CGcell error!"<<endl;
         in_file.close();
         in_file.open("analyze/"+file_n+"_top.txt",std::ios_base::out);
         if (!in_file.good())
