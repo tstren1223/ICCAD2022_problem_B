@@ -1,5 +1,4 @@
 #include "gp_global.h"
-#include "gp_data.h"
 
 #include "gp_region.h"
 #include "gp_qsolve.h"
@@ -13,6 +12,8 @@ double MinCellDist=0.01; //to avoid zero distance between two cells
 int t_numNets;
 int t_numCells;
 vector<vector<int>> t_netCell;
+vector<vector<double>>t_netPinX;
+vector<vector<double>>t_netPinY;
 int t_numPins;
 long Cxsize;
 long Cysize;
@@ -32,7 +33,7 @@ vector<double> varX;
 vector<double> varY;
 int numMovables = 0;
 int numConnects = 0;
-
+set<int> fixed_cell;
 NetModel netModel = NetModelNone;
 
 #ifdef FAST_INDEX_LOOKUP
@@ -223,26 +224,26 @@ void B2BModel(){
         bool lxm,hxm,lym,hym;
         lxp = hxp = lyp = hyp = 0;
         lxc = hxc = lyc = hyc = t_netCell[net][0];
-        if(lxc < t_numCells){
+        if(lxc<t_numCells&&!fixed_cell.count(lxc)){
             lx = hx = varX[lxc];
             ly = hy = varY[lyc];
             lxm = hxm = lym = hym = true;
         }else{
-            lx = hx = cellX[lxc] + netPinX[net][0];
-            ly = hy = cellY[lyc] + netPinY[net][0];
+            lx = hx = cellX[lxc] + t_netPinX[net][0];
+            ly = hy = cellY[lyc] + t_netPinY[net][0];
             lxm = hxm = lym = hym = false;
         }
         for(int p=1; p<nPins; p++){
             int cell = t_netCell[net][p];
             double px, py;
             bool mov;
-            if(cell < t_numCells){
+            if(cell<t_numCells&&!fixed_cell.count(cell)){
                 px = varX[cell];
                 py = varY[cell];
                 mov = true;
             }else{
-                px = cellX[cell]+netPinX[net][p];
-                py = cellY[cell]+netPinY[net][p];
+                px = cellX[cell]+t_netPinX[net][p];
+                py = cellY[cell]+t_netPinY[net][p];
                 mov = false;
             }
             if(px <= lx && cell != hxc){
@@ -276,13 +277,13 @@ void B2BModel(){
                 int cell = t_netCell[net][i];
                 double px,py;
                 bool movable;
-                if(cell < t_numCells){
+                if(cell<t_numCells&&!fixed_cell.count(cell)){
                     px = varX[cell];
                     py = varY[cell];
                     movable = true;
                 }else{
-                    px = cellX[cell]+netPinX[net][i];
-                    py = cellY[cell]+netPinY[net][i];
+                    px = cellX[cell]+t_netPinX[net][i];
+                    py = cellY[cell]+t_netPinY[net][i];
                     movable = false;
                 }
                 if(movable){
@@ -304,13 +305,13 @@ void B2BModel(){
             int cell = t_netCell[net][p];
             double px, py;
             bool mov;
-            if(cell < t_numCells){
+            if(cell<t_numCells&&!fixed_cell.count(cell)){
                 px = varX[cell];
                 py = varY[cell];
                 mov = true;
             }else{
-                px = cellX[cell]+netPinX[net][p];
-                py = cellY[cell]+netPinY[net][p];
+                px = cellX[cell]+t_netPinX[net][p];
+                py = cellY[cell]+t_netPinY[net][p];
                 mov = false;
             }
             if(p != lxp && p != hxp){
@@ -377,6 +378,8 @@ void UpdateBoxConstraintRelaxedRect(double relax, double maxDisp){
 
 void jacobiM_inverse(){
     for(int i=0; i<numMovables; i++){
+        if(fixed_cell.count(i))
+            continue;
         int idxx=idxGetX(i,i);
         if(idxx<0){
             Mx_inverse[i]=0;
@@ -419,14 +422,23 @@ void lowerBound(
         int pins,
         int cells,
         int nets,
-        vector<vector<int>> net_Cell
+        vector<vector<int>> net_Cell,
+        vector<vector<double>> net_pinx,
+        vector<vector<double>> net_piny,
+        int* fixed
         ){
     //setting
     t_numPins = pins;
     t_numCells = cells;
     t_numNets = nets;
     t_netCell = net_Cell;
-
+    t_netPinX=net_pinx;
+    t_netPinY=net_piny;
+    fixed_cell.clear();
+    for(int i=0;i<cells;i++){
+        if(fixed[i])
+            fixed_cell.insert(i);
+    }
     int CGi_max=500; //--The maximum iteration times of CG
     initCG(model,cellX,cellY);
     copy(cellX.begin(), cellX.begin()+t_numCells, varX.begin());

@@ -7,13 +7,12 @@
 #include "bits/stdc++.h"
 using namespace db;
 #include <sys/wait.h>
-#include <sys/shm.h>
 #include <unistd.h>
 // ICCAD2022
 int _scale = 0;
 
 pid_t pid;
-int shmid, shmid2, shmid3, shmid4;
+int shmid;
 std::map<int, int> top_to_g;
 std::map<int, int> bottom_to_g;
 class Tech
@@ -24,6 +23,7 @@ public:
     unsigned nNets;
     map<string, int> cellMap;
     map<string, int> typeMap;
+    map<pair<int, int>, pair<int, int>> pinpinmap; // global to local
     vector<string> cellName;
     vector<int> cellX;
     vector<int> cellY;
@@ -865,6 +865,26 @@ public:
         out_file.close();
         return true;
     }
+    bool read_GP_result(string file = "")
+    {
+        ifstream i_file(file);
+        if (!i_file.good())
+        {
+            printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
+            return false;
+        }
+        string name;
+        while (i_file >> name)
+        {
+            if(database.name_cells.find(name)==database.name_cells.end())
+                cerr<<"Error in GP reloading"<<endl;
+            db::Cell* c = database.name_cells[name];
+            int X,Y;
+            i_file >> X>> Y;
+            c->place(X,Y);
+        }
+        return true;
+    }
     bool write_par()
     {
         ofstream out2_file("net.hgr.part.2");
@@ -1141,7 +1161,7 @@ public:
         {
             for (int j = 0; j < width; j++)
             {
-                in_file << CGcell[i][j] << "\t";
+                in_file << setw(3) << CGcell[i][j] << "\t";
                 check += CGcell[i][j];
             }
             in_file << endl;
@@ -1159,7 +1179,7 @@ public:
         {
             for (int j = 0; j < width; j++)
             {
-                in_file << CGcell_t[i][j] << "\t";
+                in_file << setw(3) << CGcell_t[i][j] << "\t";
             }
             in_file << endl;
         }
@@ -1174,7 +1194,7 @@ public:
         {
             for (int j = 0; j < width; j++)
             {
-                in_file << CGcell_b[i][j] << "\t";
+                in_file << setw(3) << CGcell_b[i][j] << "\t";
             }
             in_file << endl;
         }
@@ -1568,25 +1588,34 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     io::IOModule::cells = global_inst.cell_inst_num;
     io::IOModule::nets = global_inst.net_num;
     io::IOModule::pins = 0;
-    shmid = shmget(0, sizeof(double) * io::IOModule::cells, IPC_CREAT | 0600);
-    shmid2 = shmget(0, sizeof(double) * io::IOModule::cells, IPC_CREAT | 0600);
-    shmid3 = shmget(0, sizeof(sem_t), IPC_CREAT | 0600);
-    shmid4 = shmget(0, sizeof(sem_t), IPC_CREAT | 0600);
-    io::IOModule::shared_memx = (double *)shmat(shmid, NULL, 0);
-    io::IOModule::shared_memy = (double *)shmat(shmid2, NULL, 0);
-    io::IOModule::end_of_LB = (sem_t *)shmat(shmid3, NULL, 0);
-    io::IOModule::data_ready = (sem_t *)shmat(shmid4, NULL, 0);
     io::IOModule::top_c = top.cell_num;
     io::IOModule::bott_c = bottom.cell_num;
+    io::IOModule::netPinX.resize(io::IOModule::nets);
+    io::IOModule::netPinY.resize(io::IOModule::nets);
     for (int i = 0; i < io::IOModule::nets; i++)
     {
         io::IOModule::pins += global_inst.net_pin_num[i];
         io::IOModule::netCells.push_back(vector<int>());
+        io::IOModule::netPinX[i].resize(global_inst.net_pin_num[i]);
+        io::IOModule::netPinY[i].resize(global_inst.net_pin_num[i]);
         for (int j = 0; j < global_inst.net_pin_num[i]; j++)
-            io::IOModule::netCells[i].push_back(global_inst.cell_inst_map[global_inst.net_cell_name[i][j]]);
+        {
+            string cell_name = global_inst.net_cell_name[i][j];
+            Die_infro *now = global_inst.cell_to_die(cell_name);
+            pair<int, int> wh = global_inst.cell_wh(cell_name);
+            io::IOModule::netCells[i].push_back(global_inst.cell_inst_map[cell_name]);
+            if (now->tech->pinpinmap.find(make_pair(i, j)) == now->tech->pinpinmap.end())
+                cout << "PINPIN error!" << endl;
+            pair<int, int> typepin = now->tech->pinpinmap[make_pair(i, j)];
+            io::IOModule::netPinX[i][j] = now->tech->typePinX[typepin.first][typepin.second] - wh.first + 0.5;
+            io::IOModule::netPinY[i][j] = now->tech->typePinY[typepin.first][typepin.second] - wh.second + 0.5;
+        }
     }
-    sem_init(io::IOModule::end_of_LB, 1, 0);
-    sem_init(io::IOModule::data_ready, 1, 0);
+    cout << "Set up shared_memory" << endl;
+    io::IOModule::sh.ini(io::IOModule::cells);
+    sem_init(io::IOModule::sh.end_of_LB, 1, 0);
+    sem_init(io::IOModule::sh.data_ready, 1, 0);
+    cout << "Set up shared_memory ending" << endl;
     pid = fork();
     io::IOModule::pid = pid;
     if (pid == -1)
@@ -1605,7 +1634,6 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     }
     if (io::IOModule::load_place)
         return true;
-
     if (io::IOModule::TOP || !io::IOModule::ANS)
         bsData.load_Die(top);
     else
@@ -2000,7 +2028,7 @@ bool Database::readICCAD2022(const std::string &in_filename)
     tech_B.setup_areas();
     global_inst.setup_cell_net_map();
     // hmetis
-    if (io::IOModule::load_place == false && io::IOModule::ANS == false)
+    if (io::IOModule::load_par == false && io::IOModule::ANS == false)
     {
         global_inst.f.partition();
         global_inst.write_par();
@@ -2101,6 +2129,7 @@ bool Database::readICCAD2022(const std::string &in_filename)
             typePinID = (*now_tech).typePinMap[tpName];
             (*now_tech).netCells[netID].push_back(cellID);
             (*now_tech).netPins[netID].push_back(typePinID);
+            (*now_tech).pinpinmap[make_pair(i, j)] = make_pair(typeID, typePinID);
         }
     }
 
@@ -2116,25 +2145,26 @@ bool Database::writeICCAD2022(const std::string &file)
         if (io::IOModule::GP_check)
         {
             io::IOModule::GP_check = false;
-            global_inst.write_GP_result("gp_bottom.txt");
+            if (io::IOModule::load_GP == false)
+                global_inst.write_GP_result("gp_bottom.txt");
+            else
+                global_inst.read_GP_result("gp_bottom.txt");
             return true;
         }
         else
         {
             waitpid(pid, NULL, WUNTRACED);
-            cout << "Semaphore1:" << sem_destroy(io::IOModule::data_ready) << endl;
-            cout << "Semaphore2:" << sem_destroy(io::IOModule::end_of_LB) << endl;
-            cout << "S_mem1:" << shmctl(shmid, IPC_RMID, NULL) << endl;
-            cout << "S_mem2:" << shmctl(shmid2, IPC_RMID, NULL) << endl;
-            cout << "S_mem3:" << shmctl(shmid3, IPC_RMID, NULL) << endl;
-            cout << "S_mem4:" << shmctl(shmid4, IPC_RMID, NULL) << endl;
+            cout << io::IOModule::sh.end(pid);
             cout << "wait ending" << endl;
         }
     }
     else if (io::IOModule::GP_check)
     {
         io::IOModule::GP_check = false;
-        global_inst.write_GP_result("gp_top.txt");
+        if (io::IOModule::load_GP == false)
+            global_inst.write_GP_result("gp_top.txt");
+        else
+            global_inst.read_GP_result("gp_top.txt");
         return true;
     }
     if (io::IOModule::TOP)
@@ -2155,12 +2185,7 @@ bool Database::writeICCAD2022(const std::string &file)
             }
         }
         global_inst.write_Place_result(io::IOModule::TOP, "top.txt");
-        // cout<<"Semaphore1:"<<sem_destroy(io::IOModule::data_ready)<<endl;
-        // cout<<"Semaphore2:"<<sem_destroy(io::IOModule::end_of_LB)<<endl;
-        shmdt(io::IOModule::end_of_LB);
-        shmdt(io::IOModule::data_ready);
-        shmdt(io::IOModule::shared_memx);
-        shmdt(io::IOModule::shared_memy);
+        cout << io::IOModule::sh.end(pid);
     }
     if (io::IOModule::ANS)
     {

@@ -2,6 +2,9 @@
     "makefile.extensionOutputFolder": "./.vscode",
     "files.associations": {
         "*.inc": "asp",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "vector": "cpp"
     }
 }

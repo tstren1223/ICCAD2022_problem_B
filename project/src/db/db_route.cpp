@@ -57,7 +57,10 @@ void GRGrid::initRGrids(int tx, int ty, int nlayer) {
     this->tx = tx;
     this->ty = ty;
     this->tz = (nlayer - 1) / 8 + 1;
-    rgrids = (char*)calloc(tx *tz, sizeof(char)*ty);
+    
+    rgrids = (char*)malloc((size_t)tx*(size_t)tz*(size_t)ty);
+    for(size_t i=0;i<(size_t)tx*(size_t)tz*(size_t)ty;i++)
+        rgrids[i]=0;
 
     long mem = sizeof(char) * tx * ty * tz;
     printlog(LOG_DEBUG, "grids = %d x %d x %d", tx, ty, tz);
@@ -65,7 +68,7 @@ void GRGrid::initRGrids(int tx, int ty, int nlayer) {
 }
 
 void GRGrid::setRGrid(int x, int y, int z, char v) {
-    long long i = x * (ty * tz) + y * tz + z / 8;
+    size_t i = x * (ty * tz) + y * tz + z / 8;
     int s = z % 8;
     if (v == 0) {
         (*(rgrids+i)) &= ~(1 << s);
@@ -75,7 +78,7 @@ void GRGrid::setRGrid(int x, int y, int z, char v) {
 }
 
 char GRGrid::getRGrid(int x, int y, int z) {
-    long long i = x * (ty * tz) + y * tz + z / 8;
+    size_t i = x * (ty * tz) + y * tz + z / 8;
     int s = z % 8;
     return ((*(rgrids+i)) >> s) & 1;
     // return (rgrids[x][y][z/8] >> z) & 1;

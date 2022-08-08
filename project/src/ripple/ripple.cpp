@@ -40,11 +40,11 @@ int Ripple::_run(int argc, char **argv)
         rippleSetting.flow = RippleSetting::PlaceFlow::ICCAD2022;
 
         gp::GPModule::MainGRIterations = 0;
-        io::IOModule *io_m=new io::IOModule;
+        io::IOModule *io_m = new io::IOModule;
 #ifdef __GP__
-        gp::GPModule *gp_m=new gp::GPModule;
+        gp::GPModule *gp_m = new gp::GPModule;
 #endif
-        dp::DPModule *dp_m=new dp::DPModule;
+        dp::DPModule *dp_m = new dp::DPModule;
         db::DBModule::EdgeSpacing = true;
         db::DBModule::EnablePG = false;
         db::DBModule::EnableIOPin = false;
@@ -58,17 +58,18 @@ int Ripple::_run(int argc, char **argv)
                      "wirelength = %.2lf (scale=%.2lf)",
                      (double)database.getHPWL() / (double)database.siteW,
                      (double)database.siteW);
-            #ifdef __GP__
-            io::IOModule::GP_check=true;
-            gp_m->gplace();
+#ifdef __GP__
+
+            io::IOModule::GP_check = true;
+            if(io::IOModule::load_GP==false)
+                gp_m->gplace();
             io_m->save();
-            #endif
+
+#endif
             printlog(LOG_INFO,
                      "wirelength = %.2lf (scale=%.2lf)",
                      (double)database.getHPWL() / (double)database.siteW,
                      (double)database.siteW);
-            dp::DPModule::MaxDisp = database.maxDisp * database.siteH / database.siteW;
-            dp::DPModule::MaxDensity = database.maxDensity;
             dp_m->dplace();
         }
         io_m->save();
@@ -123,7 +124,8 @@ int Ripple::getArgs(int argc, char **argv)
                 printlog(LOG_ERROR, "unknown bookshelf format %s", type.c_str());
                 return 1;
             }
-        }else if (!strcmp(argv[a], "-output_def"))
+        }
+        else if (!strcmp(argv[a], "-output_def"))
         {
             ++a;
             io::IOModule::BookshelfPlacement.assign(argv[a]);
@@ -143,7 +145,7 @@ int Ripple::getArgs(int argc, char **argv)
         {
             io::IOModule::BookshelfPl.assign(argv[++a]);
         }
-         else if (!strcmp(argv[a], "-input_def"))
+        else if (!strcmp(argv[a], "-input_def"))
         {
             io::IOModule::DefCell.assign(argv[++a]);
         }
@@ -221,6 +223,15 @@ int Ripple::getArgs(int argc, char **argv)
                 printlog(LOG_ERROR, "unknown placement flow: %s", flow.c_str());
                 return 1;
             }
+        }
+        else if (strcmp(argv[a], "-load_par") == 0)
+        {
+            io::IOModule::load_par = true;
+        }
+        else if (strcmp(argv[a], "-load_GP") == 0)
+        {
+            io::IOModule::load_par=true;
+            io::IOModule::load_GP = true;
         }
         else if (strcmp(argv[a], "-load_place") == 0)
         {

@@ -16,7 +16,9 @@ void lowerBound(
         int pins,
         int cells,
         int nets,
-        vector<vector<int>>net_Cell);
+        vector<vector<int>>net_Cell,vector<vector<double>> net_pinx,
+        vector<vector<double>> net_piny,
+        int* fixed);
 void initLowerBound();
 
 #endif
