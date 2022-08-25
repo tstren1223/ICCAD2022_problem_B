@@ -564,7 +564,7 @@ void Database::SetupTargetDensity() {
         regionCellArea[region] += width * height;
     }
 
-    double defaultTargetDensity = 0.8;
+    double defaultTargetDensity = 0.95;
     for (size_t i = 0; i != nRegions; ++i) {
         double regionDensity = (double)regionCellArea[i] / (double)siteMap.nRegionSites[i];
         printlog(LOG_VERBOSE,

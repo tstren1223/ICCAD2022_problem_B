@@ -169,10 +169,16 @@ public:
         void partition()
         {
             net();
+            int error=0;
             if (system("chmod 755 shmetis") == -1)
-                printlog(LOG_ERROR, "fail to execute chmod 755 shmetis");
+                error=1;
             if (system("./shmetis net.hgr 2 5") == -1)
+                error=2;
+            if(error==1){
+                printlog(LOG_ERROR, "fail to execute chmod 755 shmetis");
+            }else if(error==2){
                 printlog(LOG_ERROR, "fail to execute ./shmetis net.hgr 2 5");
+            }
             read_net();
             area_adjust();
             ans();
@@ -1626,20 +1632,36 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     {
         io::IOModule::TOP = true;
         io::IOModule::die_to_g = top_to_g;
+        io::IOModule::in_file_name="top";
+        io::IOModule::out_file_name="top_out.txt";
     }
     else
     {
         io::IOModule::ANS = true;
         io::IOModule::die_to_g = bottom_to_g;
+        io::IOModule::in_file_name="bot";
+        io::IOModule::out_file_name="bot_out.txt";
     }
     if (io::IOModule::load_place)
         return true;
-    if (io::IOModule::TOP || !io::IOModule::ANS)
-        bsData.load_Die(top);
-    else
-        bsData.load_Die(bottom);
-
+    if(!io::IOModule::Ripple_independent){
+        bsData.format = "bookshelf";
+        bsData.nCells = 0;
+        bsData.nTypes = 0;
+        bsData.nNets = 0;
+        bsData.nRows = 0;
+        
+        readBSNodes(io::IOModule::in_file_name);
+        readBSNets(io::IOModule::in_file_name);
+        readBSScl(io::IOModule::in_file_name);
+    }else{
+        if (io::IOModule::TOP || !io::IOModule::ANS)
+            bsData.load_Die(top);
+        else
+            bsData.load_Die(bottom);
+    }
     bsData.estimateSiteSize();
+    /*
     if (bsData.siteWidth < 10)
     {
         _scale = 100;
@@ -1654,7 +1676,10 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     {
         // database.scale = 1;
     }
+    */
     _scale = 1;
+    bsData.siteWidth=1;
+
     bsData.scaleData(_scale);
     database.clear();
     database.dieLX = INT_MAX;
@@ -2028,7 +2053,7 @@ bool Database::readICCAD2022(const std::string &in_filename)
     tech_B.setup_areas();
     global_inst.setup_cell_net_map();
     // hmetis
-    if (io::IOModule::load_par == false && io::IOModule::ANS == false)
+    if (io::IOModule::load_par == false && io::IOModule::ANS == false&&io::IOModule::Ripple_independent)
     {
         global_inst.f.partition();
         global_inst.write_par();
@@ -2150,11 +2175,8 @@ bool Database::writeICCAD2022(const std::string &file)
             else
                 global_inst.read_GP_result("gp_bottom.txt");
             return true;
-        }
-        else
-        {
+        }else{
             waitpid(pid, NULL, WUNTRACED);
-            cout << io::IOModule::sh.end(pid);
             cout << "wait ending" << endl;
         }
     }
@@ -2184,10 +2206,14 @@ bool Database::writeICCAD2022(const std::string &file)
                 global_inst.cell_xy[cell->name()] = make_pair(cell->lx() / _scale, cell->ly() / _scale);
             }
         }
-        global_inst.write_Place_result(io::IOModule::TOP, "top.txt");
+        if(io::IOModule::Ripple_independent)
+            global_inst.write_Place_result(io::IOModule::TOP, "top.txt");
+        else
+            writeBSPl(io::IOModule::out_file_name);
         cout << io::IOModule::sh.end(pid);
+        cout<<"END TOP"<<endl;
     }
-    if (io::IOModule::ANS)
+    if (io::IOModule::ANS&&io::IOModule::Ripple_independent)
     {
         checkPlaceError();
         if (io::IOModule::load_place == false)
@@ -2246,6 +2272,196 @@ bool Database::writeICCAD2022(const std::string &file)
         else
             printlog(LOG_INFO, "Output to %s", file.c_str());
     }
+    else if(io::IOModule::ANS){
+        checkPlaceError();
+        printlog(LOG_INFO, "--------------Load the result of top die--------------");
+        for (auto cell : database.cells)
+        {
+            if (global_inst.cell_xy.find(cell->name()) != global_inst.cell_xy.end())
+            {
+                cerr << "Repeat load placement result of " << cell->name() << endl;
+                return false;
+            }
+            else
+            {
+                global_inst.cell_xy[cell->name()] = make_pair(cell->lx() / _scale, cell->ly() / _scale);
+            }
+        }
+        writeBSPl(io::IOModule::out_file_name);
+        cout << io::IOModule::sh.end(pid);
+        cout<<"END BOT"<<endl;
+    }
 
+    return true;
+}
+
+
+//-----------------------------------------------------------------------------------------------
+
+
+bool Database::readBSNodes(const std::string& file) {
+    // TODO: add cells type information
+    string file_name = file + "_cells.txt";
+    ifstream fs(file_name);
+    if (!fs.good()) {
+        printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
+        return false;
+    }
+    stringstream ss;
+    ss << fs.rdbuf();  
+
+    ss >> bsData.nCells;
+    //nCells
+    //cname width height type
+    string  str;  
+    for(int i=0;i<bsData.nCells;i++)
+    {       
+        string cName;
+        int cWidth,cHeight;
+        string cType;                
+        cName = "cell_"+to_string(i);
+        ss>>cWidth;
+        ss>>cHeight;
+        ss>>cType;
+        bool cFixed = false;
+        
+        int typeID = -1;
+        if (bsData.typeMap.find(cType) == bsData.typeMap.end()) {
+            typeID = bsData.nTypes++;
+            bsData.typeMap[cType] = typeID;
+            bsData.typeName.push_back(cType);
+            bsData.typeWidth.push_back(cWidth);
+            bsData.typeHeight.push_back(cHeight);
+            bsData.typeFixed.push_back((char)(cFixed ? 1 : 0));
+            bsData.typeNPins.push_back(0);
+            bsData.typePinName.push_back(vector<string>());
+            bsData.typePinDir.push_back(vector<char>());
+            bsData.typePinX.push_back(vector<double>());
+            bsData.typePinY.push_back(vector<double>());
+        } else {
+            typeID = bsData.typeMap[cType];
+            assert(cWidth == bsData.typeWidth[typeID]);
+            assert(cHeight == bsData.typeHeight[typeID]);
+        }
+        bsData.cellMap[cName] = i;
+        bsData.cellType.push_back(typeID);
+        bsData.cellFixed.push_back((char)(cFixed ? 1 : 0));
+        bsData.cellName.push_back(cName);
+        bsData.cellX.push_back(0);
+        bsData.cellY.push_back(0);
+    }
+    ss.clear();
+    fs.close();
+    return true;
+}
+
+bool Database::readBSNets(const std::string& file) {
+    // TODO: add nets information
+    std::cout << "reading net" << std::endl;
+    string file_name = file + "_nets.txt";
+    ifstream fs(file_name);
+    if (!fs.good()) {
+        printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
+        return false;
+    }
+
+    string str;
+    stringstream ss;    
+    ss << fs.rdbuf();
+    int numNets;
+    ss>>numNets;
+    bsData.nNets = numNets;
+    bsData.netName.resize(numNets);
+    bsData.netCells.resize(numNets);  // nets[cellID]
+    bsData.netPins.resize(numNets);   // nets[pinID]
+    for(int i=0;i<numNets; i++)
+    {
+        // pinNum
+        // cellID,pinName,pinX,pinY
+        // ....  pinNum times
+        int degree;
+        ss>>degree;
+        bsData.netName[i] = "net_"+to_string(i);        
+        for (int j = 0; j < degree; j++)
+        {            
+            int cellID;
+            double pinX = 0;
+            double pinY = 0;
+            string pinName;
+            
+            ss>>cellID;
+            ss>>pinName;
+            ss>>pinX;
+            ss>>pinY;
+
+            int typeID = bsData.cellType[cellID];
+            int typePinID = -1;                                              
+            string tpName = bsData.typeName[typeID]+"/"+pinName;
+
+            if (bsData.typePinMap.find(tpName) == bsData.typePinMap.end()) {
+                typePinID = bsData.typeNPins[typeID]++;
+                bsData.typePinMap[tpName] = typePinID;
+                bsData.typePinName[typeID].push_back(pinName);
+                bsData.typePinDir[typeID].push_back('x');
+                bsData.typePinX[typeID].push_back(pinX);
+                bsData.typePinY[typeID].push_back(pinY);
+            } else {
+                typePinID = bsData.typePinMap[tpName];
+                assert(bsData.typePinX[typeID][typePinID] == pinX);
+                assert(bsData.typePinY[typeID][typePinID] == pinY);
+                assert(bsData.typePinDir[typeID][typePinID] == 'x');
+            }
+            bsData.netCells[i].push_back(cellID);
+            bsData.netPins[i].push_back(typePinID);
+        }
+    }
+    
+    fs.close();
+    return true;
+}
+
+bool Database::readBSScl(const std::string& file) {
+    //TODO: add rows information
+    std::cout << "reading scl" << std::endl;
+    string file_name = file+"_row.txt";
+    ifstream fs(file_name);
+    if (!fs.good()) {
+        printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
+        return false;
+    }
+    string str;
+    stringstream ss;
+    ss << fs.rdbuf();
+    // numRows , dieWidth , rowHeight
+    int numRows,dieWidth,rowHeight;
+    ss>>numRows;
+    ss>>dieWidth;
+    ss>>rowHeight;
+    bsData.siteWidth = 1;
+    bsData.siteHeight = rowHeight;
+    bsData.nRows = numRows;
+    bsData.rowX.resize(numRows);
+    bsData.rowY.resize(numRows);
+    bsData.rowSites.resize(numRows);
+    for(int i=0;i<numRows;i++)
+    {        
+        bsData.rowY[i] = i*rowHeight;
+        bsData.rowX[i] =  0;
+        bsData.rowSites[i] = dieWidth/bsData.siteWidth;
+    }
+    fs.close();
+    return true;
+}
+
+
+bool Database::writeBSPl(const std::string& file) {
+    ofstream fs(file);
+    if (!fs.good()) {
+        printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
+        return false;
+    }
+    for (auto cell : database.cells) 
+        fs << cell->lx() / siteW <<" "<<cell->ly() / siteW<<endl;
+    fs.close();
     return true;
 }

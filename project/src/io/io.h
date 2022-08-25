@@ -30,7 +30,8 @@ namespace io
 
     public:
         static std::string Format;
-
+        static std::string in_file_name;
+        static std::string out_file_name;
         static std::string BookshelfAux;
         static std::string BookshelfPl;
         static std::string BookshelfVariety;
@@ -47,6 +48,8 @@ namespace io
         static bool ANS;
         static bool GP_check;
         static bool statics;
+        static bool Ripple_independent;
+        static bool GP_sep;
 
     public:
         const std::string &name() const { return _name; }

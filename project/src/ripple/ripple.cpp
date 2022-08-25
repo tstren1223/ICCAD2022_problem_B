@@ -70,7 +70,7 @@ int Ripple::_run(int argc, char **argv)
                      "wirelength = %.2lf (scale=%.2lf)",
                      (double)database.getHPWL() / (double)database.siteW,
                      (double)database.siteW);
-            dp_m->dplace();
+            dp_m->dplace("WLDriven");
         }
         io_m->save();
     }
@@ -248,6 +248,9 @@ int Ripple::getArgs(int argc, char **argv)
         else if (strcmp(argv[a], "-statics") == 0)
         {
             io::IOModule::statics = true;
+        }
+        else if(strcmp(argv[a],"-dep")==0){
+            io::IOModule::Ripple_independent=false;
         }
         else if (argv[a][0] == '-')
         {

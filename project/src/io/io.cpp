@@ -8,7 +8,8 @@
 #include <sys/ipc.h>
 using namespace io;
 std::string IOModule::_name = "io";
-
+std::string IOModule::in_file_name = "";
+std::string IOModule::out_file_name = "";
 std::string IOModule::Format = "lefdef";
 std::string IOModule::BookshelfAux = "";
 std::string IOModule::BookshelfPl = "1";
@@ -22,6 +23,8 @@ bool IOModule::GP_check = false;
 bool IOModule::TOP = false;
 bool IOModule::ANS = false;
 bool IOModule::statics = false;
+bool IOModule::Ripple_independent=true;
+bool IOModule::GP_sep=false;
 shared IOModule::sh;
 sem_t *io::shared::data_ready;
 sem_t *io::shared::end_of_LB;

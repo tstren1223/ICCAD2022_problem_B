@@ -113,7 +113,7 @@ void fix_cells(int cell_n,vector<double> dummyX_fix,vector<double>dummyY_fix)
 }
 void merge_lower_bound(int &initIter, NetModel &initNetModel, NetModel &mainNetModel, bool init, double pnWeightBegin = 0, double pnWeightEnd = 0, int iter = 0, int mainIter = 0, int LBIter = 0)
 {
-    bool sep = false;
+    bool sep = io::IOModule::GP_sep;
 
     if (!sep)
     {
@@ -136,7 +136,7 @@ void merge_lower_bound(int &initIter, NetModel &initNetModel, NetModel &mainNetM
                 cellX2.push_back(io::IOModule::sh.shared_memx[i]);
                 cellY2.push_back(io::IOModule::sh.shared_memy[i]);
             }
-            fix_cells(cells,cellX2,cellY2);
+            //fix_cells(cells,cellX2,cellY2);
             if (init)
             {
                 for (int i = 0; i < cells; i++)
@@ -198,9 +198,9 @@ void merge_lower_bound(int &initIter, NetModel &initNetModel, NetModel &mainNetM
     else
     {
         if (init)
-            lowerBound(0.001, 0.0, initIter, LBModeFenceBBox, initNetModel, 0.0, -1, cellX, cellY, numPins, numCells, numNets, netCell, netPinX, netPinY, io::IOModule::sh.fixed);
+            lowerBound(0.001, 0.0, initIter, LBModeFenceBBox, initNetModel, 0.0, -1, cellX, cellY, numPins, numCells, numNets, netCell, netPinX, netPinY);
         else
-            lowerBound(0.001, pnWeightBegin + (pnWeightEnd - pnWeightBegin) * (iter - 1) / (mainIter - 1), LBIter, LBModeFenceRelax, mainNetModel, 0.0, -1, cellX, cellY, numPins, numCells, numNets, netCell, netPinX, netPinY, io::IOModule::sh.fixed);
+            lowerBound(0.001, pnWeightBegin + (pnWeightEnd - pnWeightBegin) * (iter - 1) / (mainIter - 1), LBIter, LBModeFenceRelax, mainNetModel, 0.0, -1, cellX, cellY, numPins, numCells, numNets, netCell, netPinX, netPinY);
     }
 }
 void placement()

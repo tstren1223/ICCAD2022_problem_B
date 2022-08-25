@@ -9,10 +9,10 @@ using namespace gp;
 
 std::string GPModule::_name = "gp";
 
-int GPModule::NumThreads = 2;
+int GPModule::NumThreads = 4;
 int GPModule::InitIterations = 6; // xbar: 0
 int GPModule::MainWLIterations = 10;
-int GPModule::MainCongIterations = 40;
+int GPModule::MainCongIterations = 40;//40
 int GPModule::MainGRIterations = 4;
 int GPModule::LowerBoundIterations = 6;
 int GPModule::UpperBoundIterations = 5;
@@ -20,8 +20,8 @@ int GPModule::FinalIterations = 1;
 
 double GPModule::PseudoNetWeightBegin = 0.1;
 double GPModule::PseudoNetWeightEnd = 2.0;
-double GPModule::TargetDensityBegin = 0.8;
-double GPModule::TargetDensityEnd = 0.8;
+double GPModule::TargetDensityBegin = 1;
+double GPModule::TargetDensityEnd = 1;
 std::string GPModule::InitNetModel = "B2B";
 std::string GPModule::MainNetModel = "B2B";
 

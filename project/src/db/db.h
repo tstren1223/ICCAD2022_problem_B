@@ -237,7 +237,10 @@ public:
     bool readICCAD2022(const std::string& in_filename);
     bool readICCAD2022_setup(const std::string &FILE);
     bool writeICCAD2022(const std::string&file);
-
+    bool writeBSPl(const std::string& file);
+    bool readBSNodes(const std::string& file);
+    bool readBSNets(const std::string& file);
+    bool readBSScl(const std::string& file);
 private:
     void SetupLayers();
     void SetupCellLibrary();
