@@ -564,7 +564,7 @@ void Database::SetupTargetDensity() {
         regionCellArea[region] += width * height;
     }
 
-    double defaultTargetDensity = 0.95;
+    double defaultTargetDensity = 0.85;
     for (size_t i = 0; i != nRegions; ++i) {
         double regionDensity = (double)regionCellArea[i] / (double)siteMap.nRegionSites[i];
         printlog(LOG_VERBOSE,
@@ -635,8 +635,8 @@ void Database::SetupGRGrid() {
     int numTracksX = (maxTrackV - minTrackV) / minPitchV + 1;
     int numTracksY = (maxTrackH - minTrackH) / minPitchH + 1;
     if((long long)numTracksX*(long long)numTracksY>1000000000){
-        numTracksX/=10;
-        numTracksY/=10;
+        numTracksX/=2;
+        numTracksY/=2;
     }
     unsigned numGCellX = grGrid.gcellNX;
     unsigned numGCellY = grGrid.gcellNY;
@@ -651,7 +651,7 @@ void Database::SetupGRGrid() {
         numGCellX = (numTracksX - 1) / gcellTrackX + 1;
         stepGCellX = minPitchV * gcellTrackX;
         if(numGCellX>1000){
-            gcellTrackX*=10;
+            gcellTrackX*=2;
             numGCellX = (numTracksX - 1) / gcellTrackX + 1;
             stepGCellX = minPitchV * gcellTrackX;
         }
@@ -663,7 +663,7 @@ void Database::SetupGRGrid() {
         numGCellY = (numTracksY - 1) / gcellTrackY + 1;
         stepGCellY = minPitchH * gcellTrackY;
         if(numGCellY>1000){
-            gcellTrackY*=10;
+            gcellTrackY*=2;
             numGCellY = (numTracksY - 1) / gcellTrackY + 1;
             stepGCellY = minPitchH * gcellTrackY;
         }

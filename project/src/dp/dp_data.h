@@ -205,7 +205,7 @@ public:
     float ty() const { return _ty; }
     long txLong() const { return lround(_tx); }
     long tyLong() const { return lround(_ty); }
-
+    
     int cx() const { return _x.load(memory_order_acquire) + w / 2; }
     int cy() const { return _y.load(memory_order_acquire) + h / 2; }
     int lx() const { return _x.load(memory_order_acquire); }
@@ -302,6 +302,9 @@ public:
         return os << cell.id << "\t(" << cell._ox << ", " << cell._oy << ")\t(" << cell.lx() << ", " << cell.ly()
                   << ')';
     }
+    //2022
+    void cell_ImproveRegion_2die(Region& region, Region& optimalRegion);
+    void cell_optimal_2dies(Region &region);
 };
 
 class Pin {
@@ -1259,7 +1262,7 @@ public:
     ConcurrentQueue<pair<Cell*, bool>>* rQ = nullptr;
     ProducerToken* tPtok = nullptr;
     vector<ProducerToken> rPtoks;
-
+    void update_share(bool wait=true);
 #ifdef MAINTAIN_HIST
     vector<unsigned> hist;
     unsigned maxDisp;

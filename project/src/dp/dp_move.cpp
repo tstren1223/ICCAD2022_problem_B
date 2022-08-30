@@ -1,6 +1,7 @@
 #include "dp.h"
 #include "dp_data.h"
 #include "dp_global.h"
+#include "../io/io.h"
 using namespace dp;
 
 void DPlacer::doLegalMove(const Move& move, bool updateNet) {

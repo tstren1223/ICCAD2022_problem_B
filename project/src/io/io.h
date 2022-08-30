@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include<set>
 #include <semaphore.h>
 namespace io
 {
@@ -12,11 +13,11 @@ namespace io
     {
     public:
     
-        static sem_t *end_of_LB, *data_ready;
+        static sem_t *end_of_LB, *data_ready,*DP;
         double *shared_memx;
         double *shared_memy;
         int *fixed;
-        int shmid, shmid2, shmid3, shmid4, shmid5;
+        int shmid, shmid2, shmid3, shmid4, shmid5,shmid6;
         shared();
         void ini(int cells);
         std::string end(pid_t p);
@@ -50,6 +51,7 @@ namespace io
         static bool statics;
         static bool Ripple_independent;
         static bool GP_sep;
+        static bool debug;
 
     public:
         const std::string &name() const { return _name; }
@@ -67,6 +69,11 @@ namespace io
         static std::map<int, std::pair<int, int>> g_to_die;
         static std::vector<std::vector<double>> netPinX;
         static std::vector<std::vector<double>> netPinY;
+        //DP
+        static std::vector<std::set<int>> gnet_to_localset;
+        static std::map<std::pair<int, int>,int> gnet_to_gcell;
+        static std::map<int,int> net_to_gnet;
+        
     };
 }
 

@@ -15,6 +15,8 @@ pid_t pid;
 int shmid;
 std::map<int, int> top_to_g;
 std::map<int, int> bottom_to_g;
+std::map<int, int> top_net_to_g;
+std::map<int, int> bottom__net_to_g;
 class Tech
 {
 public:
@@ -169,14 +171,17 @@ public:
         void partition()
         {
             net();
-            int error=0;
+            int error = 0;
             if (system("chmod 755 shmetis") == -1)
-                error=1;
+                error = 1;
             if (system("./shmetis net.hgr 2 5") == -1)
-                error=2;
-            if(error==1){
+                error = 2;
+            if (error == 1)
+            {
                 printlog(LOG_ERROR, "fail to execute chmod 755 shmetis");
-            }else if(error==2){
+            }
+            else if (error == 2)
+            {
                 printlog(LOG_ERROR, "fail to execute ./shmetis net.hgr 2 5");
             }
             read_net();
@@ -882,12 +887,12 @@ public:
         string name;
         while (i_file >> name)
         {
-            if(database.name_cells.find(name)==database.name_cells.end())
-                cerr<<"Error in GP reloading"<<endl;
-            db::Cell* c = database.name_cells[name];
-            int X,Y;
-            i_file >> X>> Y;
-            c->place(X,Y);
+            if (database.name_cells.find(name) == database.name_cells.end())
+                cerr << file<<" Error in GP reloading" <<name<<endl;
+            db::Cell *c = database.name_cells[name];
+            int X, Y;
+            i_file >> X >> Y;
+            c->place(X, Y);
         }
         return true;
     }
@@ -1070,21 +1075,7 @@ public:
                     top_maxY = max(y, top_maxY);
                 }
             }
-            if (terminals_map.count(i))
-            {
-                x = terminals_map[i].second * top.Terminal_w + top.Terminal_w * 0.5 + top.Terminal_spacing;
-                y = terminals_map[i].first * top.Terminal_h + top.Terminal_h * 0.5 + top.Terminal_spacing;
-                bot_minX = min(x, bot_minX);
-                bot_maxX = max(x, bot_maxX);
-                bot_minY = min(y, bot_minY);
-                bot_maxY = max(y, bot_maxY);
-                top_minX = min(x, top_minX);
-                top_maxX = max(x, top_maxX);
-                top_minY = min(y, top_minY);
-                top_maxY = max(y, top_maxY);
-                hpwl += (top_maxY - top_minY) + (top_maxX - top_minX) + (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
-            }
-            else if (die == false)
+            if (die == false)
                 hpwl += (top_maxY - top_minY) + (top_maxX - top_minX);
             else
                 hpwl += (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
@@ -1619,9 +1610,8 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     }
     cout << "Set up shared_memory" << endl;
     io::IOModule::sh.ini(io::IOModule::cells);
-    sem_init(io::IOModule::sh.end_of_LB, 1, 0);
-    sem_init(io::IOModule::sh.data_ready, 1, 0);
     cout << "Set up shared_memory ending" << endl;
+    io::IOModule::gnet_to_localset.resize(global_inst.net_num);
     pid = fork();
     io::IOModule::pid = pid;
     if (pid == -1)
@@ -1632,29 +1622,44 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     {
         io::IOModule::TOP = true;
         io::IOModule::die_to_g = top_to_g;
-        io::IOModule::in_file_name="top";
-        io::IOModule::out_file_name="top_out.txt";
+        io::IOModule::net_to_gnet = top_net_to_g;
+        io::IOModule::in_file_name = "top";
+        io::IOModule::out_file_name = "top_out.txt";
     }
     else
     {
         io::IOModule::ANS = true;
         io::IOModule::die_to_g = bottom_to_g;
-        io::IOModule::in_file_name="bot";
-        io::IOModule::out_file_name="bot_out.txt";
+        io::IOModule::net_to_gnet = bottom__net_to_g;
+        io::IOModule::in_file_name = "bot";
+        io::IOModule::out_file_name = "bot_out.txt";
+    }
+    
+    for(int i=0;i<global_inst.net_num;i++){
+        for(int j=0;j<global_inst.net_pin_num[i];j++){
+            if(pid==0&&global_inst.pin_to_die(i,j)==&top){
+                io::IOModule::gnet_to_localset[i].insert(j);
+            }else if(pid>0&&global_inst.pin_to_die(i,j)==&bottom){
+                io::IOModule::gnet_to_localset[i].insert(j);
+            }
+        }
     }
     if (io::IOModule::load_place)
         return true;
-    if(!io::IOModule::Ripple_independent){
+    if (!io::IOModule::Ripple_independent)
+    {
         bsData.format = "bookshelf";
         bsData.nCells = 0;
         bsData.nTypes = 0;
         bsData.nNets = 0;
         bsData.nRows = 0;
-        
+
         readBSNodes(io::IOModule::in_file_name);
         readBSNets(io::IOModule::in_file_name);
         readBSScl(io::IOModule::in_file_name);
-    }else{
+    }
+    else
+    {
         if (io::IOModule::TOP || !io::IOModule::ANS)
             bsData.load_Die(top);
         else
@@ -1678,8 +1683,6 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
     }
     */
     _scale = 1;
-    bsData.siteWidth=1;
-
     bsData.scaleData(_scale);
     database.clear();
     database.dieLX = INT_MAX;
@@ -2053,16 +2056,16 @@ bool Database::readICCAD2022(const std::string &in_filename)
     tech_B.setup_areas();
     global_inst.setup_cell_net_map();
     // hmetis
-    if (io::IOModule::load_par == false && io::IOModule::ANS == false&&io::IOModule::Ripple_independent)
+    if (io::IOModule::load_par == false && io::IOModule::ANS == false && io::IOModule::Ripple_independent)
     {
         global_inst.f.partition();
-        global_inst.write_par();
     }
     else
     {
         global_inst.load_par();
     }
     global_inst.f.output_to_global(global_inst);
+    global_inst.write_par();
     printlog(LOG_INFO, "Partition over.");
     // allocate cell instance
     for (int i = 0; i < global_inst.cell_inst_num; i++)
@@ -2102,6 +2105,11 @@ bool Database::readICCAD2022(const std::string &in_filename)
         {
             int cell_encoding = global_inst.cell_inst_map[global_inst.net_cell_name[i][j]]; // instance encoding
             (now_tech) = global_inst.cell_inst_die[cell_encoding]->tech;
+            pair<int, int> iii = make_pair(i, j);
+            if (io::IOModule::gnet_to_gcell.find(iii) == io::IOModule::gnet_to_gcell.end())
+                io::IOModule::gnet_to_gcell[iii] = cell_encoding;
+            else
+                cerr << "Error: gnet_to_gcell wrong!" << endl;
             // Net
             string nName = global_inst.net_name[i];
             int netID = 0;
@@ -2155,6 +2163,10 @@ bool Database::readICCAD2022(const std::string &in_filename)
             (*now_tech).netCells[netID].push_back(cellID);
             (*now_tech).netPins[netID].push_back(typePinID);
             (*now_tech).pinpinmap[make_pair(i, j)] = make_pair(typeID, typePinID);
+            if (now_tech == &tech_A)
+                top_net_to_g[netID] = i;
+            else
+                bottom__net_to_g[netID] = i;
         }
     }
 
@@ -2174,8 +2186,20 @@ bool Database::writeICCAD2022(const std::string &file)
                 global_inst.write_GP_result("gp_bottom.txt");
             else
                 global_inst.read_GP_result("gp_bottom.txt");
+            for (int i = 0; i < global_inst.net_num; i++)
+            {
+                for (int j = 0; j < global_inst.net_pin_num[i]; j++)
+                {
+                    string cell_name = global_inst.net_cell_name[i][j];
+                    pair<int, int> wh = global_inst.cell_wh(cell_name);
+                    io::IOModule::netPinX[i][j] += wh.first - 0.5;
+                    io::IOModule::netPinY[i][j] += wh.second - 0.5;
+                }
+            }
             return true;
-        }else{
+        }
+        else
+        {
             waitpid(pid, NULL, WUNTRACED);
             cout << "wait ending" << endl;
         }
@@ -2187,6 +2211,16 @@ bool Database::writeICCAD2022(const std::string &file)
             global_inst.write_GP_result("gp_top.txt");
         else
             global_inst.read_GP_result("gp_top.txt");
+        for (int i = 0; i < global_inst.net_num; i++)
+        {
+            for (int j = 0; j < global_inst.net_pin_num[i]; j++)
+            {
+                string cell_name = global_inst.net_cell_name[i][j];
+                pair<int, int> wh = global_inst.cell_wh(cell_name);
+                io::IOModule::netPinX[i][j] += wh.first - 0.5;
+                io::IOModule::netPinY[i][j] += wh.second - 0.5;
+            }
+        }
         return true;
     }
     if (io::IOModule::TOP)
@@ -2206,14 +2240,13 @@ bool Database::writeICCAD2022(const std::string &file)
                 global_inst.cell_xy[cell->name()] = make_pair(cell->lx() / _scale, cell->ly() / _scale);
             }
         }
-        if(io::IOModule::Ripple_independent)
+        if (io::IOModule::Ripple_independent)
             global_inst.write_Place_result(io::IOModule::TOP, "top.txt");
         else
             writeBSPl(io::IOModule::out_file_name);
         cout << io::IOModule::sh.end(pid);
-        cout<<"END TOP"<<endl;
     }
-    if (io::IOModule::ANS&&io::IOModule::Ripple_independent)
+    if (io::IOModule::ANS && io::IOModule::Ripple_independent)
     {
         checkPlaceError();
         if (io::IOModule::load_place == false)
@@ -2249,7 +2282,7 @@ bool Database::writeICCAD2022(const std::string &file)
         printlog(LOG_INFO, "(DP)Total HPWL for 2 dies: %lld", r = global_inst.getCost());
         if (io::IOModule::statics)
         {
-            ofstream out_file("statics.txt", std::ios_base::app | std::ios_base::out);
+            ofstream out_file(file+"_statics.txt", std::ios_base::app | std::ios_base::out);
             if (!out_file.good())
             {
                 printlog(LOG_ERROR, "cannot open file: %s", "statics.txt");
@@ -2272,7 +2305,8 @@ bool Database::writeICCAD2022(const std::string &file)
         else
             printlog(LOG_INFO, "Output to %s", file.c_str());
     }
-    else if(io::IOModule::ANS){
+    else if (io::IOModule::ANS)
+    {
         checkPlaceError();
         printlog(LOG_INFO, "--------------Load the result of top die--------------");
         for (auto cell : database.cells)
@@ -2289,44 +2323,44 @@ bool Database::writeICCAD2022(const std::string &file)
         }
         writeBSPl(io::IOModule::out_file_name);
         cout << io::IOModule::sh.end(pid);
-        cout<<"END BOT"<<endl;
     }
 
     return true;
 }
 
-
 //-----------------------------------------------------------------------------------------------
 
-
-bool Database::readBSNodes(const std::string& file) {
+bool Database::readBSNodes(const std::string &file)
+{
     // TODO: add cells type information
     string file_name = file + "_cells.txt";
     ifstream fs(file_name);
-    if (!fs.good()) {
+    if (!fs.good())
+    {
         printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
         return false;
     }
     stringstream ss;
-    ss << fs.rdbuf();  
+    ss << fs.rdbuf();
 
     ss >> bsData.nCells;
-    //nCells
-    //cname width height type
-    string  str;  
-    for(int i=0;i<bsData.nCells;i++)
-    {       
+    // nCells
+    // cname width height type
+    string str;
+    for (int i = 0; i < bsData.nCells; i++)
+    {
         string cName;
-        int cWidth,cHeight;
-        string cType;                
-        cName = "cell_"+to_string(i);
-        ss>>cWidth;
-        ss>>cHeight;
-        ss>>cType;
+        int cWidth, cHeight;
+        string cType;
+        cName = "cell_" + to_string(i);
+        ss >> cWidth;
+        ss >> cHeight;
+        ss >> cType;
         bool cFixed = false;
-        
+
         int typeID = -1;
-        if (bsData.typeMap.find(cType) == bsData.typeMap.end()) {
+        if (bsData.typeMap.find(cType) == bsData.typeMap.end())
+        {
             typeID = bsData.nTypes++;
             bsData.typeMap[cType] = typeID;
             bsData.typeName.push_back(cType);
@@ -2338,7 +2372,9 @@ bool Database::readBSNodes(const std::string& file) {
             bsData.typePinDir.push_back(vector<char>());
             bsData.typePinX.push_back(vector<double>());
             bsData.typePinY.push_back(vector<double>());
-        } else {
+        }
+        else
+        {
             typeID = bsData.typeMap[cType];
             assert(cWidth == bsData.typeWidth[typeID]);
             assert(cHeight == bsData.typeHeight[typeID]);
@@ -2355,57 +2391,62 @@ bool Database::readBSNodes(const std::string& file) {
     return true;
 }
 
-bool Database::readBSNets(const std::string& file) {
+bool Database::readBSNets(const std::string &file)
+{
     // TODO: add nets information
     std::cout << "reading net" << std::endl;
     string file_name = file + "_nets.txt";
     ifstream fs(file_name);
-    if (!fs.good()) {
+    if (!fs.good())
+    {
         printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
         return false;
     }
 
     string str;
-    stringstream ss;    
+    stringstream ss;
     ss << fs.rdbuf();
     int numNets;
-    ss>>numNets;
+    ss >> numNets;
     bsData.nNets = numNets;
     bsData.netName.resize(numNets);
-    bsData.netCells.resize(numNets);  // nets[cellID]
-    bsData.netPins.resize(numNets);   // nets[pinID]
-    for(int i=0;i<numNets; i++)
+    bsData.netCells.resize(numNets); // nets[cellID]
+    bsData.netPins.resize(numNets);  // nets[pinID]
+    for (int i = 0; i < numNets; i++)
     {
         // pinNum
         // cellID,pinName,pinX,pinY
         // ....  pinNum times
         int degree;
-        ss>>degree;
-        bsData.netName[i] = "net_"+to_string(i);        
+        ss >> degree;
+        bsData.netName[i] = "net_" + to_string(i);
         for (int j = 0; j < degree; j++)
-        {            
+        {
             int cellID;
             double pinX = 0;
             double pinY = 0;
             string pinName;
-            
-            ss>>cellID;
-            ss>>pinName;
-            ss>>pinX;
-            ss>>pinY;
+
+            ss >> cellID;
+            ss >> pinName;
+            ss >> pinX;
+            ss >> pinY;
 
             int typeID = bsData.cellType[cellID];
-            int typePinID = -1;                                              
-            string tpName = bsData.typeName[typeID]+"/"+pinName;
+            int typePinID = -1;
+            string tpName = bsData.typeName[typeID] + "/" + pinName;
 
-            if (bsData.typePinMap.find(tpName) == bsData.typePinMap.end()) {
+            if (bsData.typePinMap.find(tpName) == bsData.typePinMap.end())
+            {
                 typePinID = bsData.typeNPins[typeID]++;
                 bsData.typePinMap[tpName] = typePinID;
                 bsData.typePinName[typeID].push_back(pinName);
                 bsData.typePinDir[typeID].push_back('x');
                 bsData.typePinX[typeID].push_back(pinX);
                 bsData.typePinY[typeID].push_back(pinY);
-            } else {
+            }
+            else
+            {
                 typePinID = bsData.typePinMap[tpName];
                 assert(bsData.typePinX[typeID][typePinID] == pinX);
                 assert(bsData.typePinY[typeID][typePinID] == pinY);
@@ -2415,17 +2456,19 @@ bool Database::readBSNets(const std::string& file) {
             bsData.netPins[i].push_back(typePinID);
         }
     }
-    
+
     fs.close();
     return true;
 }
 
-bool Database::readBSScl(const std::string& file) {
-    //TODO: add rows information
+bool Database::readBSScl(const std::string &file)
+{
+    // TODO: add rows information
     std::cout << "reading scl" << std::endl;
-    string file_name = file+"_row.txt";
+    string file_name = file + "_row.txt";
     ifstream fs(file_name);
-    if (!fs.good()) {
+    if (!fs.good())
+    {
         printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
         return false;
     }
@@ -2433,35 +2476,36 @@ bool Database::readBSScl(const std::string& file) {
     stringstream ss;
     ss << fs.rdbuf();
     // numRows , dieWidth , rowHeight
-    int numRows,dieWidth,rowHeight;
-    ss>>numRows;
-    ss>>dieWidth;
-    ss>>rowHeight;
+    int numRows, dieWidth, rowHeight;
+    ss >> numRows;
+    ss >> dieWidth;
+    ss >> rowHeight;
     bsData.siteWidth = 1;
     bsData.siteHeight = rowHeight;
     bsData.nRows = numRows;
     bsData.rowX.resize(numRows);
     bsData.rowY.resize(numRows);
     bsData.rowSites.resize(numRows);
-    for(int i=0;i<numRows;i++)
-    {        
-        bsData.rowY[i] = i*rowHeight;
-        bsData.rowX[i] =  0;
-        bsData.rowSites[i] = dieWidth/bsData.siteWidth;
+    for (int i = 0; i < numRows; i++)
+    {
+        bsData.rowY[i] = i * rowHeight;
+        bsData.rowX[i] = 0;
+        bsData.rowSites[i] = dieWidth / bsData.siteWidth;
     }
     fs.close();
     return true;
 }
 
-
-bool Database::writeBSPl(const std::string& file) {
+bool Database::writeBSPl(const std::string &file)
+{
     ofstream fs(file);
-    if (!fs.good()) {
+    if (!fs.good())
+    {
         printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
         return false;
     }
-    for (auto cell : database.cells) 
-        fs << cell->lx() / siteW <<" "<<cell->ly() / siteW<<endl;
+    for (auto cell : database.cells)
+        fs << cell->lx() / siteW << " " << cell->ly() / siteW << endl;
     fs.close();
     return true;
 }

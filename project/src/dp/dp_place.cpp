@@ -1,11 +1,259 @@
 #include "dp_data.h"
 #include "dp_global.h"
-
+#include "../io/io.h"
 using namespace dp;
 using namespace moodycamel;
 vector<Cell *>::iterator cellsIter;
 list<pair<Cell *, Region>> originalRegions;
-unordered_map<Cell *, Region>operatingRegions;
+unordered_map<Cell *, Region> operatingRegions;
+// 2022 modified
+void check_share(DPlacer &D)
+{
+    for (int i = 0; i < io::IOModule::cells; i++)
+    {
+        cout << i << " " << io::IOModule::sh.shared_memx[i] << " " << io::IOModule::sh.shared_memy[i] << endl;
+    }
+    if (io::IOModule::pid == 0)
+    {
+        cout << "top:" << endl;
+    }
+    else
+    {
+        cout << "bot:" << endl;
+    }
+    for (unsigned int i = 0; i < D.cells.size(); i++)
+    {
+        cout << i << " " << D.cells[i]->lx() * D.siteW << " " << D.cells[i]->ly() * D.siteH << endl;
+    }
+}
+void DPlacer::update_share(bool wait)
+{
+    if (io::IOModule::pid == 0)
+    {
+        if (wait)
+            sem_post(io::IOModule::sh.data_ready);
+        if ((int)cells.size() != io::IOModule::top_c)
+            cerr << "Error::top size problem in DP!" << endl;
+        for (int i = 0; i < io::IOModule::top_c; i++)
+        {
+            db::Cell *d = database.cells[i];
+            io::IOModule::sh.shared_memx[io::IOModule::die_to_g[i]] = dbCellMap[d]->lx() * siteW + dbLX;
+            io::IOModule::sh.shared_memy[io::IOModule::die_to_g[i]] = dbCellMap[d]->ly() * siteH + dbLY;
+            // cout<<"(DT)Put"<<i<<"to "<<io::IOModule::die_to_g[i]<<endl;
+        }
+        if (wait)
+            sem_wait(io::IOModule::sh.end_of_LB);
+    }
+    else
+    {
+        if (wait)
+            sem_post(io::IOModule::sh.end_of_LB);
+        if ((int)cells.size() != io::IOModule::bott_c)
+            cerr << "Error::bot size problem in DP!" << endl;
+        for (int i = 0; i < io::IOModule::bott_c; i++)
+        {
+            db::Cell *d = database.cells[i];
+            io::IOModule::sh.shared_memx[io::IOModule::die_to_g[i]] = dbCellMap[d]->lx() * siteW + dbLX;
+            io::IOModule::sh.shared_memy[io::IOModule::die_to_g[i]] = dbCellMap[d]->ly() * siteH + dbLY;
+            // cout<<"(DB)Put"<<i<<"to "<<io::IOModule::die_to_g[i]<<endl;
+        }
+        if (wait)
+            sem_wait(io::IOModule::sh.data_ready);
+    }
+}
+
+void net_GR(Net *net, Region &r)
+{
+    int g_n = io::IOModule::net_to_gnet[net->i];
+    int num = io::IOModule::netPinX[g_n].size();
+    for (int j = 0; j < num; j++)
+    {
+        if (io::IOModule::gnet_to_localset[g_n].count(j))
+        {
+            continue;
+        }
+        int px, py;
+        int cell = io::IOModule::gnet_to_gcell[make_pair(g_n, j)];
+        px = io::IOModule::netPinX[g_n][j] + io::IOModule::sh.shared_memx[cell];
+        py = io::IOModule::netPinY[g_n][j] + io::IOModule::sh.shared_memy[cell];
+        r.cover(px, py);
+    }
+}
+void Cell::cell_optimal_2dies(Region &region)
+{
+
+    int nPins = pins.size();
+    if (nPins == 0)
+    {
+        region.lx = DPModule::dplacer->coreLX;
+        region.ly = DPModule::dplacer->coreLY;
+        region.hx = DPModule::dplacer->coreHX - w;
+        region.hy = DPModule::dplacer->coreHY - h;
+        return;
+    }
+    vector<int> boundx(pins.size() * 2);
+    vector<int> boundy(pins.size() * 2);
+    vector<Pin *>::const_iterator cpi = pins.cbegin();
+    vector<Pin *>::const_iterator cpe = pins.cend();
+    for (int i = 0; cpi != cpe; ++cpi, i++)
+    {
+        const Pin *cellpin = *cpi;
+        set<pair<int, int>> f;
+        Region netbound = cellpin->net->box;
+        int cpx = cellpin->pinX();
+        int cpy = cellpin->pinY();
+        net_GR(cellpin->net, netbound);
+        int lx = DPModule::dplacer->coreHX * DPModule::dplacer->siteW;
+        int ly = DPModule::dplacer->coreHY * DPModule::dplacer->siteH;
+        int hx = DPModule::dplacer->coreLX * DPModule::dplacer->siteW;
+        int hy = DPModule::dplacer->coreLY * DPModule::dplacer->siteH;
+        if (nPins > 2 && netbound.lx != cpx && netbound.hx != cpx && netbound.ly != cpy && netbound.hy != cpy)
+        {
+            lx = netbound.lx;
+            ly = netbound.ly;
+            hx = netbound.hx;
+            hy = netbound.hy;
+        }
+        else
+        {
+            vector<Pin *>::const_iterator npi = cellpin->net->pins.cbegin();
+            vector<Pin *>::const_iterator npe = cellpin->net->pins.cend();
+            for (; npi != npe; ++npi)
+            {
+                Pin *netpin = *npi;
+                if (netpin->cell == this)
+                {
+                    continue;
+                }
+                int px = netpin->pinX();
+                int py = netpin->pinY();
+                lx = min(px, lx);
+                ly = min(py, ly);
+                hx = max(px, hx);
+                hy = max(py, hy);
+            }
+            int g_n = io::IOModule::net_to_gnet[cellpin->net->i];
+            int num = io::IOModule::netPinX[g_n].size();
+            for (int j = 0; j < num; j++)
+            {
+                if (io::IOModule::gnet_to_localset[g_n].count(j))
+                {
+                    continue;
+                }
+                int px, py;
+                int cell = io::IOModule::gnet_to_gcell[make_pair(g_n, j)];
+                px = io::IOModule::netPinX[g_n][j] + io::IOModule::sh.shared_memx[cell];
+                py = io::IOModule::netPinY[g_n][j] + io::IOModule::sh.shared_memy[cell];
+                lx = min(px, lx);
+                ly = min(py, ly);
+                hx = max(px, hx);
+                hy = max(py, hy);
+            }
+        }
+
+        boundx[i * 2] = lx - cellpin->x;
+        boundy[i * 2] = ly - cellpin->y;
+        boundx[i * 2 + 1] = hx - cellpin->x;
+        boundy[i * 2 + 1] = hy - cellpin->y;
+    }
+
+    nth_element(boundx.begin(), boundx.begin() + (nPins - 1), boundx.end());
+    nth_element(boundy.begin(), boundy.begin() + (nPins - 1), boundy.end());
+    region.lx = (int)floor((double)boundx[nPins - 1] / DPModule::dplacer->siteW);
+    region.ly = (int)floor((double)boundy[nPins - 1] / DPModule::dplacer->siteH);
+    /*
+    int rx = *min_element(boundx.begin() + nPins, boundx.end());
+    int ry = *min_element(boundy.begin() + nPins, boundy.end());
+    region.hx = (int)ceil((double)rx / DPModule::dplacer.siteW);
+    region.hy = (int)ceil((double)ry / DPModule::dplacer.siteH);
+    */
+    nth_element(boundx.begin(), boundx.begin() + nPins, boundx.end());
+    nth_element(boundy.begin(), boundy.begin() + nPins, boundy.end());
+    region.hx = (int)ceil((double)boundx[nPins] / DPModule::dplacer->siteW);
+    region.hy = (int)ceil((double)boundy[nPins] / DPModule::dplacer->siteH);
+
+    region.lx = max(DPModule::dplacer->coreLX, min(DPModule::dplacer->coreHX - (int)w, region.lx));
+    region.ly = max(DPModule::dplacer->coreLY, min(DPModule::dplacer->coreHY - (int)h, region.ly));
+    region.hx = max(DPModule::dplacer->coreLX, min(DPModule::dplacer->coreHX - (int)w, region.hx));
+    region.hy = max(DPModule::dplacer->coreLY, min(DPModule::dplacer->coreHY - (int)h, region.hy));
+}
+void Cell::cell_ImproveRegion_2die(Region& region, Region& optimalRegion) {
+    if (optimalRegion.empty()) {
+        cell_optimal_2dies(optimalRegion);
+    }
+    region = optimalRegion;
+    region.cover(_x.load(memory_order_acquire), _y.load(memory_order_acquire));
+}
+long long getHPWLDiff_2die(Move &move)
+{
+    long long wl_diff = 0;
+    for (const Pin *cellpin : move.target.cell->pins)
+    {
+        int n = cellpin->net->i;
+        Net *net = cellpin->net;
+        set<pair<int, int>> f;
+        Region region = net->box;
+        net_GR(net, region);
+        const int ox = cellpin->pinX();
+        const int oy = cellpin->pinY();
+        const int nx = move.target.xLong() * database.siteW + cellpin->x;
+        const int ny = move.target.yLong() * database.siteH + cellpin->y;
+        bool need_update = false;
+        if (io::IOModule::netPinX[n].size() <= 3 || region.lx == ox || region.hx == ox || region.ly == oy || region.hy == oy)
+        {
+            need_update = true;
+        }
+
+        long long o = region.height() + region.width();
+        if (need_update)
+        {
+            region.clear();
+            vector<Pin *>::iterator npi = net->pins.begin();
+            vector<Pin *>::iterator npe = net->pins.end();
+            for (; npi != npe; ++npi)
+            {
+                Pin *pin = *npi;
+                double px, py;
+                if (pin == cellpin)
+                {
+                    px = nx;
+                    py = ny;
+                }
+                else
+                {
+                    px = pin->x;
+                    py = pin->y;
+                    if (pin->cell)
+                    {
+                        px += pin->cell->lx() * database.siteW;
+                        py += pin->cell->ly() * database.siteH;
+                    }
+                }
+                region.cover(px, py);
+            }
+            int g_n = io::IOModule::net_to_gnet[n];
+            int num = io::IOModule::netPinX[g_n].size();
+            for (int j = 0; j < num; j++)
+            {
+                if (io::IOModule::gnet_to_localset[g_n].count(j))
+                {
+                    continue;
+                }
+                int px, py;
+                int cell = io::IOModule::gnet_to_gcell[make_pair(g_n, j)];
+                px = io::IOModule::netPinX[g_n][j] + io::IOModule::sh.shared_memx[cell];
+                py = io::IOModule::netPinY[g_n][j] + io::IOModule::sh.shared_memy[cell];
+                region.cover(px, py);
+            }
+        }
+        else
+            region.cover(nx, ny);
+
+        wl_diff = wl_diff + region.width() + region.height() - o;
+    }
+    return wl_diff;
+}
+//----------------------------------------------------------------------------
 void DPlacer::setupFlow(const std::string &name)
 {
     if (name == "iccad2017")
@@ -65,6 +313,7 @@ void DPlacer::place(const string &name)
 #ifdef LIBGD
     drawDisplacement("dp_displacement_nn.png");
 #endif
+    //bool GP_f = true;
     for (bool running = true; running;)
     {
         DPStage::Technique tech = flow.technique();
@@ -89,13 +338,39 @@ void DPlacer::place(const string &name)
             nMoved = localChainMove();
             break;
         case DPStage::Technique::GlobalMove:
+            /*
+            if(!io::IOModule::debug){
+            if (GP_f)
+            {
+                update_share();
+                GP_f = false;
+            }
+            sem_wait(io::IOModule::sh.DP);
+            }
+            // check_share(*this);
+            */
             nMoved = globalMove();
+            /*
+            if(!io::IOModule::debug){
+            update_share(false);
+            // check_share(*this);
+            sem_post(io::IOModule::sh.DP);
+            }*/
             break;
         case DPStage::Technique::GlobalMoveForPinAccess:
             nMoved = globalMoveForPinAccess();
             break;
         case DPStage::Technique::LocalMove:
+            /*
+            sem_wait(io::IOModule::sh.DP);
+            // check_share(*this);
+            */
             nMoved = localMove();
+            /*
+            update_share(false);
+            // check_share(*this);
+            sem_post(io::IOModule::sh.DP);
+            */
             break;
         case DPStage::Technique::LocalMoveForPinAccess:
             nMoved = localMoveForPinAccess();
@@ -455,7 +730,7 @@ unsigned DPlacer::legalizeCell(const int threshold, const unsigned iThread)
                 Region oRegion = cell->getOriginalRegion(MLLLocalRegionW, MLLLocalRegionH);
 
                 assert(oRegion.area());
-                #ifdef LEGALIZE_REGION_SHIFT_TOWARDS_OPTIMAL_REGION
+#ifdef LEGALIZE_REGION_SHIFT_TOWARDS_OPTIMAL_REGION
                 Region optimalRegion = cell->getOptimalRegion();
                 optimalRegion.hx += cell->w;
                 optimalRegion.hy += cell->h;
@@ -465,7 +740,7 @@ unsigned DPlacer::legalizeCell(const int threshold, const unsigned iThread)
                 targetX = max(oRegion.lx, min(targetX, oRegion.hx));
                 targetY = max(oRegion.ly, min(targetY, oRegion.hy));
                 oRegion.shift(targetX - oRegion.cx(), targetY - oRegion.cy());
-                #endif
+#endif
                 if (oRegion.independent(operatingRegions))
 
                 {
@@ -510,7 +785,7 @@ unsigned DPlacer::legalizeCell(const int threshold, const unsigned iThread)
 
             const Region &oRegion = pcr.second;
             assert(oRegion.lx != INT_MAX && oRegion.ly != INT_MAX && oRegion.hx != INT_MIN && oRegion.hy != INT_MIN);
-            
+
             if (isLegalMove(move, oRegion, threshold, 1, iThread))
             {
                 doLegalMove(move, false);
@@ -620,7 +895,12 @@ unsigned DPlacer::globalMoveCell(Cell *cell, int threshold, int Rx, int Ry)
     for (int trial = 0; trial < 2; trial++)
     {
         Region trialRegion;
-        Region oRegion = cell->getOptimalRegion();
+        Region oRegion;
+        //if(!io::IOModule::debug)
+        //cell->cell_optimal_2dies(oRegion);
+        //else
+        oRegion=cell->getOptimalRegion();
+
         if (trial == 0)
         {
 #ifdef OPTIMAL_REGION_COVER_FIX
@@ -677,7 +957,10 @@ unsigned DPlacer::globalMoveCell(Cell *cell, int threshold, int Rx, int Ry)
         }
         else
         {
-            trialRegion = cell->getImproveRegion(oRegion);
+            //if(!io::IOModule::debug)
+            //cell->cell_ImproveRegion_2die(trialRegion,oRegion);
+            //else
+            trialRegion=cell->getImproveRegion(oRegion);
         }
         cell->tx(getrand(trialRegion.lx, trialRegion.hx));
         cell->ty(getrand(trialRegion.ly, trialRegion.hy));
@@ -771,7 +1054,8 @@ int DPlacer::localVerticalMove(Cell *cell, int threshold, int Rx, int Ry)
     {
         Move move(cell, cell->lx(), cell->ly() + offset[i]);
         // TODO: check if move improve wirelength
-        if (isLegalMove(move, region, threshold) && getHPWLDiff(move) < 0)
+        long long kkk=getHPWLDiff(move);
+        if (isLegalMove(move, region, threshold) &&  kkk< 0)
         {
             doLegalMove(move, true);
             // updateNet(move);

@@ -294,7 +294,6 @@ void DPlacer::input() {
     coreLY = 0;
     coreHX = (dbHX - dbLX) / siteW;
     coreHY = (dbHY - dbLY) / siteH;
-    cout<<coreHX<<endl;
     nRegions = database.getNumRegions();
     binW = siteH / siteW * 9;
     binH = 9;
@@ -418,7 +417,8 @@ void DPlacer::input() {
 
     //  input nets and pins
     unsigned nDPNets = 0;
-    for (db::Net* dbNet : database.nets) {
+    for (unsigned int k=0;k< database.nets.size();k++) {
+        db::Net* dbNet=database.nets[k];
         Net* dpNet = addNet();
         dpNet->i = nDPNets++;
         for (db::Pin* dbPin : dbNet->pins) {
@@ -577,7 +577,8 @@ void DPlacer::input() {
 }
 
 void DPlacer::output() {
-    for (db::Cell* dbCell : database.cells) {
+    for (unsigned int i=0;i<database.cells.size();i++) {
+        db::Cell* dbCell=database.cells[i];
         if (dbCell->fixed()) {
             continue;
         }

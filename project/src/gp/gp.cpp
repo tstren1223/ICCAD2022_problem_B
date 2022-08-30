@@ -9,10 +9,10 @@ using namespace gp;
 
 std::string GPModule::_name = "gp";
 
-int GPModule::NumThreads = 4;
+int GPModule::NumThreads = 8;
 int GPModule::InitIterations = 6; // xbar: 0
-int GPModule::MainWLIterations = 10;
-int GPModule::MainCongIterations = 40;//40
+int GPModule::MainWLIterations = 40;
+int GPModule::MainCongIterations = 0;//40
 int GPModule::MainGRIterations = 4;
 int GPModule::LowerBoundIterations = 6;
 int GPModule::UpperBoundIterations = 5;

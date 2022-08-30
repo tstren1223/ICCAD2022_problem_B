@@ -252,6 +252,9 @@ int Ripple::getArgs(int argc, char **argv)
         else if(strcmp(argv[a],"-dep")==0){
             io::IOModule::Ripple_independent=false;
         }
+        else if(strcmp(argv[a], "-debug") == 0){
+            io::IOModule::debug=true;
+        }
         else if (argv[a][0] == '-')
         {
             if (!strcmp(argv[a], "-EnablePinAccRpt"))
