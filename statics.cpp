@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 {
     string file = argv[1];
     string iter = argv[2];
-    int error = 0;
+    int error = 0,error2=0;;
     string following;
     bool two = false;
     if (argc>3&&string(argv[3]) == "-debug")
@@ -68,16 +68,16 @@ int main(int argc, char *argv[])
     {
         system(("./placer " + file + " out.txt -statics " + following + "> /dev/null").c_str());
         if (two)
-            system(("./placer " + file + " out_1.txt -statics -debug -load_par" + following + "> /dev/null").c_str());
+            system(("./placer " + file + " out_1.txt -statics -debug -load_par " + following + "> /dev/null").c_str());
         system(("./evaluator " + file + " out.txt > temp.txt").c_str());
         check_evaluator("temp.txt",error);
         if (two){
             system(("./evaluator " + file + " out_1.txt > temp2.txt").c_str());
-            check_evaluator("temp2.txt",error);
+            check_evaluator("temp2.txt",error2);
         }
     }
     stat("out.txt_statics.txt","temp.txt",iter,error,file);
     if(two)
-        stat("out_1.txt_statics.txt","temp2.txt",iter,error,file);
+        stat("out_1.txt_statics.txt","temp2.txt",iter,error2,file);
     return 0;
 }

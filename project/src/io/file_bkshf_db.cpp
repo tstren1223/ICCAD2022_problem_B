@@ -462,7 +462,6 @@ public:
     map<string, pair<int, int>> cell_xy; // leftbottom
     unordered_map<int, pair<int, int>> terminals_map;
     vector<vector<int>> terminals_grid;
-
     // Others
     Instance()
     {
@@ -568,9 +567,9 @@ public:
         int type_index = tech->typeMap[tname];
         return make_pair(tech->typeWidth[type_index], tech->typeHeight[type_index]);
     }
-    long long getCost()
+    void getCost(long long &DP,long long &TI)
     {
-        long long hpwl = 0;
+        long long hpwl = 0,hpwl2=0;;
         for (int i = 0; i < net_num; i++)
         {
             int top_minX = INT_MAX, top_maxX = INT_MIN, top_minY = INT_MAX, top_maxY = INT_MIN;
@@ -605,10 +604,21 @@ public:
                     top_maxY = max(y, top_maxY);
                 }
             }
+            if (die == false){
+                hpwl2 += (top_maxY - top_minY) + (top_maxX - top_minX);
+            }
+            else{
+                hpwl2 += (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
+            }
             if (terminals_map.count(i))
             {
-                x = terminals_map[i].second * top.Terminal_w + top.Terminal_w * 0.5 + top.Terminal_spacing;
-                y = terminals_map[i].first * top.Terminal_h + top.Terminal_h * 0.5 + top.Terminal_spacing;
+                if(!io::IOModule::debug){
+                    x = terminals_map[i].second * top.Terminal_w + top.Terminal_w * 0.5 + top.Terminal_spacing;
+                    y = terminals_map[i].first * top.Terminal_h + top.Terminal_h * 0.5 + top.Terminal_spacing;
+                }else{
+                    x = terminals_map[i].second;
+                    y = terminals_map[i].first;
+                }
                 bot_minX = min(x, bot_minX);
                 bot_maxX = max(x, bot_maxX);
                 bot_minY = min(y, bot_minY);
@@ -619,10 +629,12 @@ public:
                 top_maxY = max(y, top_maxY);
                 hpwl += (top_maxY - top_minY) + (top_maxX - top_minX) + (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
             }
-            else if (die == false)
+            else if (die == false){
                 hpwl += (top_maxY - top_minY) + (top_maxX - top_minX);
-            else
+            }
+            else{
                 hpwl += (bot_maxY - bot_minY) + (bot_maxX - bot_minX);
+            }
         }
         vector<cell> cells;
         for (int i = 0; i < cell_inst_num; i++)
@@ -636,7 +648,8 @@ public:
             cells.push_back(d);
         }
         print_CGMAP(cells, "DP_A");
-        return hpwl;
+        DP=hpwl2;
+        TI=hpwl;
     }
     int terminal_grids_check()
     {
@@ -790,7 +803,9 @@ public:
         // cout<<"terminal_insert"<<endl;
         terminals_map.clear();
         grid_row = int((top.dieheight() - top.Terminal_spacing * 2) / top.Terminal_h);
+        //center_y=grid_row*top.Terminal_h+top.Terminal_spacing==>left_Y
         grid_col = int((top.width() - top.Terminal_spacing * 2) / top.Terminal_w);
+        //center_x=grid_col*top.Terminal_w+top.Terminal_spacing==>left_X
         terminals_grid = vector<vector<int>>(grid_row, vector<int>(grid_col, -1));
         debug_terminal = false;
         for (auto &it : f.crossNets_pair)
@@ -799,7 +814,111 @@ public:
             // debug_terminal = true;
             if (terminal_BFS(it.first, it.second) == false)
             {
-
+                return false;
+            }
+        }
+        return true;
+    }
+    set<pair<int,int>> constraint;
+    bool terminal_BFS_V2(int net_idx, int cross_type)
+    {
+        // init
+        int left=-1,right=-1,up=-1,down=-1;
+        int pin_x, pin_y;
+        int row, col;
+        int i = net_idx;
+        for (int j = 0; j < net_pin_num[i]; j++)
+        {
+            pair<int, int> pin_xy = pin_result(i, j);
+            pin_x = pin_xy.first;
+            pin_y = pin_xy.second;
+            if(left==-1||left>pin_x){
+                left=pin_x;
+            }
+            if(right==-1||right<pin_x){
+                right=pin_x;
+            }
+            if(up==-1||up<pin_y){
+                up=pin_y;
+            }
+            if(down==-1||down>pin_y){
+                down=pin_y;
+            }
+        }
+        int centX=(left+right)/2;
+        int centY=(up+down)/2;
+        queue<pair<int, int>> q_pair;
+        vector<int> dir_vec = {1, 0, -1, 0, 1};
+        set<pair<int, int>> avoid_repeat;
+        q_pair.push(make_pair(centX, centY));
+        //cout<<left<<" "<<right<<" "<<up<<" "<<down<<endl;
+        while (!q_pair.empty())
+        {
+            row = q_pair.front().second;
+            col = q_pair.front().first;
+            q_pair.pop();
+            if (debug_terminal)
+            {
+                cout << "remained:" << terminal_grids_check() << endl;
+                cout << "WANT TO:" << net_idx << endl;
+                cout << terminals_grid[row][col] << "ROWCOL:" << row << " " << col << endl;
+            }
+            if (constraint.count(make_pair(col,row))==0)
+            {
+                terminals_map[net_idx] = make_pair(row, col);
+                int high_row=row+top.Terminal_h+top.Terminal_spacing;
+                int low_row=row-top.Terminal_h-top.Terminal_spacing;
+                int high_col=col+top.Terminal_w+top.Terminal_spacing;
+                int low_col=col-top.Terminal_w-top.Terminal_spacing;
+                for(int iii=low_col;iii<=high_col;iii++){
+                    for(int jjj=low_row;jjj<=high_row;jjj++){
+                        constraint.insert(make_pair(iii,jjj));
+                    }
+                }
+                return true;
+            }
+            else
+            {
+                for (int i = 0; i < 4; i++)
+                    if (row >=0 && row + dir_vec[i] <= top.height() && col + dir_vec[i + 1] >= 0 && col + dir_vec[i + 1] <= top.width())
+                    {
+                        if (avoid_repeat.find(make_pair(col + dir_vec[i + 1], row + dir_vec[i])) != avoid_repeat.end())
+                            continue;
+                        q_pair.push(make_pair(col + dir_vec[i + 1], row + dir_vec[i]));
+                        avoid_repeat.insert(make_pair(col + dir_vec[i + 1], row + dir_vec[i]));
+                    }
+            }
+        }
+        return false;
+    }
+    bool terminal_insert_V2()
+    {
+        // terminal insert at top
+        // cout<<"terminal_insert"<<endl;
+        terminals_map.clear();
+        debug_terminal = false;
+        int min_row=top.Terminal_spacing+top.Terminal_h;
+        int max_row=top.height()-top.Terminal_spacing-top.Terminal_h;
+        int min_col=top.Terminal_spacing+top.Terminal_w;
+        int max_col=top.width()-top.Terminal_spacing-top.Terminal_w;
+        for(int i=0;i<=min_col;i++)
+            for(int j=0;j<=min_row;j++)
+                constraint.insert(make_pair(i,j));
+        for(int i=0;i<=min_col;i++)
+            for(int j=max_row;j<=top.height();j++)
+                constraint.insert(make_pair(i,j));
+        for(int i=max_col;i<=top.width();i++)
+            for(int j=0;j<=min_row;j++)
+                constraint.insert(make_pair(i,j));
+        for(int i=max_col;i<=top.width();i++)
+            for(int j=max_row;j<=top.height();j++)
+                constraint.insert(make_pair(i,j));
+        for (auto &it : f.crossNets_pair)
+        {
+            // if (it.first == 2374)
+            // debug_terminal = true;
+            if (terminal_BFS_V2(it.first, it.second) == false)
+            {
                 return false;
             }
         }
@@ -850,12 +969,15 @@ public:
         out_file << "NumTerminals " << f.CrossNets_N << endl;
         for (int i = 0; i < net_num; i++)
         {
-            if (terminals_map.count(i))
+            if (terminals_map.count(i)&&!io::IOModule::debug)
             {
                 int x = terminals_map[i].second * top.Terminal_w;
                 int y = terminals_map[i].first * top.Terminal_h;
-                out_file << "Terminal "
-                         << "N" << i + 1 << " " << (x + top.Terminal_w * 0.5 + top.Terminal_spacing) << " " << (y + top.Terminal_h * 0.5 + top.Terminal_spacing) << endl;
+                out_file << "Terminal "<< "N" << i + 1 << " " << (x + top.Terminal_w * 0.5 + top.Terminal_spacing) << " " << (y + top.Terminal_h * 0.5 + top.Terminal_spacing) << endl;
+            }else if(terminals_map.count(i)&&io::IOModule::debug){
+                int x = terminals_map[i].second;
+                int y = terminals_map[i].first;
+                out_file << "Terminal "<< "N" << i + 1 << " " << x << " " << y << endl;
             }
         }
         out_file.close();
@@ -938,13 +1060,13 @@ public:
             }
             if (file == "top.txt")
                 out_file << top.cell_num << endl;
-            else if (file == "all.txt")
+            else if (file == "all.txt"||file=="error_placement.txt")
                 out_file << cell_inst_num << endl;
             for (int i = 0; i < cell_inst_num; i++)
             {
                 if (cell_inst_die[i] == &top && file == "top.txt")
                     out_file << i << " " << cell_xy[cName[i]].first << " " << cell_xy[cName[i]].second << endl;
-                else if (file == "all.txt")
+                else if (file == "all.txt"||file=="error_placement.txt")
                     out_file << i << " " << cell_xy[cName[i]].first << " " << cell_xy[cName[i]].second << endl;
             }
             out_file.close();
@@ -979,26 +1101,22 @@ public:
         }
         else
         {
-            if (file == "all.txt")
-            {
-                load_par();
-            }
             ifstream in_file(file);
             if (!in_file.good())
             {
                 printlog(LOG_ERROR, "cannot open file: %s", file.c_str());
                 return false;
             }
-            int top_num;
-            in_file >> top_num;
-            for (int i = 0; i < top_num; i++)
+            int tot_num;
+            in_file >> tot_num;
+            for (int i = 0; i < tot_num; i++)
             {
                 int index, x, y;
                 in_file >> index >> x >> y;
                 cell_xy[cName[index]] = make_pair(x, y);
             }
             in_file.close();
-            printlog(LOG_INFO, "Reload top die result success!");
+            printlog(LOG_INFO, "Reload two dies result success!");
         }
         return true;
     }
@@ -1644,8 +1762,10 @@ bool Database::readICCAD2022_setup(const std::string &FILE)
             }
         }
     }
-    if (io::IOModule::load_place)
+    
+    if (io::IOModule::load_place){
         return true;
+    }
     if (!io::IOModule::Ripple_independent)
     {
         bsData.format = "bookshelf";
@@ -2056,7 +2176,7 @@ bool Database::readICCAD2022(const std::string &in_filename)
     tech_B.setup_areas();
     global_inst.setup_cell_net_map();
     // hmetis
-    if (io::IOModule::load_par == false && io::IOModule::ANS == false && io::IOModule::Ripple_independent)
+    if (io::IOModule::load_par == false && io::IOModule::ANS == false && io::IOModule::Ripple_independent&&io::IOModule::load_place==false)
     {
         global_inst.f.partition();
     }
@@ -2269,17 +2389,22 @@ bool Database::writeICCAD2022(const std::string &file)
         }
         printlog(LOG_INFO, "loading is over");
         // global_inst.write_Place_result(TOP);
-        if (!global_inst.terminal_insert())
+        bool check=(!io::IOModule::debug)?global_inst.terminal_insert():global_inst.terminal_insert_V2();
+        if (!check)
         {
-            global_inst.write_Place_result(true, "all.txt");
+            global_inst.write_Place_result(true, "error_place.txt");
             cerr << "Blank remained:" << global_inst.terminal_grids_check();
             printlog(LOG_ERROR, "Terminal Inersion fails");
+        }else{
+            global_inst.write_Place_result(true, "all.txt");
         }
         printlog(LOG_INFO, "Terminal Insersion is over");
         // Analyze for HPWL
-        long long r;
-        printlog(LOG_INFO, "(GP)Total HPWL for 2 dies: %lld", r = global_inst.GP_2die_analyze("gp_top.txt", "gp_bottom.txt"));
-        printlog(LOG_INFO, "(DP)Total HPWL for 2 dies: %lld", r = global_inst.getCost());
+        printlog(LOG_INFO, "(GP)Total HPWL for 2 dies: %lld",global_inst.GP_2die_analyze("gp_top.txt", "gp_bottom.txt"));
+        long long DP,TI;
+        global_inst.getCost(DP,TI);
+        printlog(LOG_INFO, "(DP)Total HPWL for 2 dies: %lld", DP);
+        printlog(LOG_INFO, "(TI)Total HPWL for 2 dies: %lld", TI);
         if (io::IOModule::statics)
         {
             ofstream out_file(file+"_statics.txt", std::ios_base::app | std::ios_base::out);
@@ -2289,13 +2414,12 @@ bool Database::writeICCAD2022(const std::string &file)
             }
             else
             {
-                out_file << r << endl;
+                out_file << TI << endl;
             }
             out_file.close();
         }
         // output
         global_inst.layout_info();
-
         global_inst.write_Place_result(false);
 
         if (!global_inst.writeICCAD2022(file))
